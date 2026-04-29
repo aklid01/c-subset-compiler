@@ -1,0 +1,395 @@
+SLR(1) SUCCESSFUL PARSE TRACE
+==================================================
+Step 1 | Stack: [0] | Lookahead: INT | Action: s10
+Step 2 | Stack: [0, 10] | Lookahead: ID | Action: r13
+Step 3 | Stack: [0, 5] | Lookahead: ID | Action: s19
+Step 4 | Stack: [0, 5, 19] | Lookahead: SEMI | Action: s26
+Step 5 | Stack: [0, 5, 19, 26] | Lookahead: INT | Action: r12
+Step 6 | Stack: [0, 5, 19, 28] | Lookahead: INT | Action: r10
+Step 7 | Stack: [0, 6] | Lookahead: INT | Action: r4
+Step 8 | Stack: [0, 17] | Lookahead: INT | Action: s10
+Step 9 | Stack: [0, 17, 10] | Lookahead: ID | Action: r13
+Step 10 | Stack: [0, 17, 5] | Lookahead: ID | Action: s19
+Step 11 | Stack: [0, 17, 5, 19] | Lookahead: SEMI | Action: s26
+Step 12 | Stack: [0, 17, 5, 19, 26] | Lookahead: INT | Action: r12
+Step 13 | Stack: [0, 17, 5, 19, 28] | Lookahead: INT | Action: r10
+Step 14 | Stack: [0, 17, 6] | Lookahead: INT | Action: r4
+Step 15 | Stack: [0, 17, 17] | Lookahead: INT | Action: s10
+Step 16 | Stack: [0, 17, 17, 10] | Lookahead: ID | Action: r13
+Step 17 | Stack: [0, 17, 17, 5] | Lookahead: ID | Action: s19
+Step 18 | Stack: [0, 17, 17, 5, 19] | Lookahead: SEMI | Action: s26
+Step 19 | Stack: [0, 17, 17, 5, 19, 26] | Lookahead: FLOAT | Action: r12
+Step 20 | Stack: [0, 17, 17, 5, 19, 28] | Lookahead: FLOAT | Action: r10
+Step 21 | Stack: [0, 17, 17, 6] | Lookahead: FLOAT | Action: r4
+Step 22 | Stack: [0, 17, 17, 17] | Lookahead: FLOAT | Action: s13
+Step 23 | Stack: [0, 17, 17, 17, 13] | Lookahead: ID | Action: r14
+Step 24 | Stack: [0, 17, 17, 17, 5] | Lookahead: ID | Action: s19
+Step 25 | Stack: [0, 17, 17, 17, 5, 19] | Lookahead: SEMI | Action: s26
+Step 26 | Stack: [0, 17, 17, 17, 5, 19, 26] | Lookahead: ID | Action: r12
+Step 27 | Stack: [0, 17, 17, 17, 5, 19, 28] | Lookahead: ID | Action: r10
+Step 28 | Stack: [0, 17, 17, 17, 6] | Lookahead: ID | Action: r4
+Step 29 | Stack: [0, 17, 17, 17, 17] | Lookahead: ID | Action: s9
+Step 30 | Stack: [0, 17, 17, 17, 17, 9] | Lookahead: ASSIGN | Action: s21
+Step 31 | Stack: [0, 17, 17, 17, 17, 9, 21] | Lookahead: INT | Action: s36
+Step 32 | Stack: [0, 17, 17, 17, 17, 9, 21, 36] | Lookahead: MULT | Action: r33
+Step 33 | Stack: [0, 17, 17, 17, 17, 9, 21, 35] | Lookahead: MULT | Action: s62
+Step 34 | Stack: [0, 17, 17, 17, 17, 9, 21, 35, 62] | Lookahead: LPAREN | Action: s42
+Step 35 | Stack: [0, 17, 17, 17, 17, 9, 21, 35, 62, 42] | Lookahead: INT | Action: s36
+Step 36 | Stack: [0, 17, 17, 17, 17, 9, 21, 35, 62, 42, 36] | Lookahead: PLUS | Action: r33
+Step 37 | Stack: [0, 17, 17, 17, 17, 9, 21, 35, 62, 42, 35] | Lookahead: PLUS | Action: r30
+Step 38 | Stack: [0, 17, 17, 17, 17, 9, 21, 35, 62, 42, 35, 59] | Lookahead: PLUS | Action: r26
+Step 39 | Stack: [0, 17, 17, 17, 17, 9, 21, 35, 62, 42, 31] | Lookahead: PLUS | Action: s48
+Step 40 | Stack: [0, 17, 17, 17, 17, 9, 21, 35, 62, 42, 31, 48] | Lookahead: INT | Action: s36
+Step 41 | Stack: [0, 17, 17, 17, 17, 9, 21, 35, 62, 42, 31, 48, 36] | Lookahead: RPAREN | Action: r33
+Step 42 | Stack: [0, 17, 17, 17, 17, 9, 21, 35, 62, 42, 31, 48, 35] | Lookahead: RPAREN | Action: r30
+Step 43 | Stack: [0, 17, 17, 17, 17, 9, 21, 35, 62, 42, 31, 48, 35, 59] | Lookahead: RPAREN | Action: r26
+Step 44 | Stack: [0, 17, 17, 17, 17, 9, 21, 35, 62, 42, 31, 48, 74] | Lookahead: RPAREN | Action: r25
+Step 45 | Stack: [0, 17, 17, 17, 17, 9, 21, 35, 62, 42, 31, 48, 74, 86] | Lookahead: RPAREN | Action: r23
+Step 46 | Stack: [0, 17, 17, 17, 17, 9, 21, 35, 62, 42, 31, 47] | Lookahead: RPAREN | Action: r22
+Step 47 | Stack: [0, 17, 17, 17, 17, 9, 21, 35, 62, 42, 69] | Lookahead: RPAREN | Action: s82
+Step 48 | Stack: [0, 17, 17, 17, 17, 9, 21, 35, 62, 42, 69, 82] | Lookahead: SEMI | Action: r31
+Step 49 | Stack: [0, 17, 17, 17, 17, 9, 21, 35, 62, 80] | Lookahead: SEMI | Action: r30
+Step 50 | Stack: [0, 17, 17, 17, 17, 9, 21, 35, 62, 80, 91] | Lookahead: SEMI | Action: r27
+Step 51 | Stack: [0, 17, 17, 17, 17, 9, 21, 35, 59] | Lookahead: SEMI | Action: r26
+Step 52 | Stack: [0, 17, 17, 17, 17, 9, 21, 31] | Lookahead: SEMI | Action: r25
+Step 53 | Stack: [0, 17, 17, 17, 17, 9, 21, 31, 47] | Lookahead: SEMI | Action: r22
+Step 54 | Stack: [0, 17, 17, 17, 17, 9, 21, 41] | Lookahead: SEMI | Action: s68
+Step 55 | Stack: [0, 17, 17, 17, 17, 9, 21, 41, 68] | Lookahead: ID | Action: r16
+Step 56 | Stack: [0, 17, 17, 17, 17, 14] | Lookahead: ID | Action: r5
+Step 57 | Stack: [0, 17, 17, 17, 17, 17] | Lookahead: ID | Action: s9
+Step 58 | Stack: [0, 17, 17, 17, 17, 17, 9] | Lookahead: ASSIGN | Action: s21
+Step 59 | Stack: [0, 17, 17, 17, 17, 17, 9, 21] | Lookahead: INT | Action: s36
+Step 60 | Stack: [0, 17, 17, 17, 17, 17, 9, 21, 36] | Lookahead: SEMI | Action: r33
+Step 61 | Stack: [0, 17, 17, 17, 17, 17, 9, 21, 35] | Lookahead: SEMI | Action: r30
+Step 62 | Stack: [0, 17, 17, 17, 17, 17, 9, 21, 35, 59] | Lookahead: SEMI | Action: r26
+Step 63 | Stack: [0, 17, 17, 17, 17, 17, 9, 21, 31] | Lookahead: SEMI | Action: r25
+Step 64 | Stack: [0, 17, 17, 17, 17, 17, 9, 21, 31, 47] | Lookahead: SEMI | Action: r22
+Step 65 | Stack: [0, 17, 17, 17, 17, 17, 9, 21, 41] | Lookahead: SEMI | Action: s68
+Step 66 | Stack: [0, 17, 17, 17, 17, 17, 9, 21, 41, 68] | Lookahead: ID | Action: r16
+Step 67 | Stack: [0, 17, 17, 17, 17, 17, 14] | Lookahead: ID | Action: r5
+Step 68 | Stack: [0, 17, 17, 17, 17, 17, 17] | Lookahead: ID | Action: s9
+Step 69 | Stack: [0, 17, 17, 17, 17, 17, 17, 9] | Lookahead: ASSIGN | Action: s21
+Step 70 | Stack: [0, 17, 17, 17, 17, 17, 17, 9, 21] | Lookahead: INT | Action: s36
+Step 71 | Stack: [0, 17, 17, 17, 17, 17, 17, 9, 21, 36] | Lookahead: SEMI | Action: r33
+Step 72 | Stack: [0, 17, 17, 17, 17, 17, 17, 9, 21, 35] | Lookahead: SEMI | Action: r30
+Step 73 | Stack: [0, 17, 17, 17, 17, 17, 17, 9, 21, 35, 59] | Lookahead: SEMI | Action: r26
+Step 74 | Stack: [0, 17, 17, 17, 17, 17, 17, 9, 21, 31] | Lookahead: SEMI | Action: r25
+Step 75 | Stack: [0, 17, 17, 17, 17, 17, 17, 9, 21, 31, 47] | Lookahead: SEMI | Action: r22
+Step 76 | Stack: [0, 17, 17, 17, 17, 17, 17, 9, 21, 41] | Lookahead: SEMI | Action: s68
+Step 77 | Stack: [0, 17, 17, 17, 17, 17, 17, 9, 21, 41, 68] | Lookahead: WHILE | Action: r16
+Step 78 | Stack: [0, 17, 17, 17, 17, 17, 17, 14] | Lookahead: WHILE | Action: r5
+Step 79 | Stack: [0, 17, 17, 17, 17, 17, 17, 17] | Lookahead: WHILE | Action: s7
+Step 80 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7] | Lookahead: LPAREN | Action: s20
+Step 81 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20] | Lookahead: ID | Action: s34
+Step 82 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 34] | Lookahead: LT | Action: r32
+Step 83 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 35] | Lookahead: LT | Action: r30
+Step 84 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 35, 59] | Lookahead: LT | Action: r26
+Step 85 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 31] | Lookahead: LT | Action: r25
+Step 86 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 31, 47] | Lookahead: LT | Action: r22
+Step 87 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 33] | Lookahead: LT | Action: s54
+Step 88 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 33, 54] | Lookahead: ID | Action: r45
+Step 89 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 33, 56] | Lookahead: ID | Action: s34
+Step 90 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 33, 56, 34] | Lookahead: AND | Action: r32
+Step 91 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 33, 56, 35] | Lookahead: AND | Action: r30
+Step 92 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 33, 56, 35, 59] | Lookahead: AND | Action: r26
+Step 93 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 33, 56, 31] | Lookahead: AND | Action: r25
+Step 94 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 33, 56, 31, 47] | Lookahead: AND | Action: r22
+Step 95 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 33, 56, 77] | Lookahead: AND | Action: r44
+Step 96 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 30] | Lookahead: AND | Action: r42
+Step 97 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39] | Lookahead: AND | Action: s66
+Step 98 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39, 66] | Lookahead: ID | Action: s34
+Step 99 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39, 66, 34] | Lookahead: NE | Action: r32
+Step 100 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39, 66, 35] | Lookahead: NE | Action: r30
+Step 101 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39, 66, 35, 59] | Lookahead: NE | Action: r26
+Step 102 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39, 66, 31] | Lookahead: NE | Action: r25
+Step 103 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39, 66, 31, 47] | Lookahead: NE | Action: r22
+Step 104 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39, 66, 33] | Lookahead: NE | Action: s58
+Step 105 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39, 66, 33, 58] | Lookahead: INT | Action: r50
+Step 106 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39, 66, 33, 56] | Lookahead: INT | Action: s36
+Step 107 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39, 66, 33, 56, 36] | Lookahead: RPAREN | Action: r33
+Step 108 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39, 66, 33, 56, 35] | Lookahead: RPAREN | Action: r30
+Step 109 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39, 66, 33, 56, 35, 59] | Lookahead: RPAREN | Action: r26
+Step 110 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39, 66, 33, 56, 31] | Lookahead: RPAREN | Action: r25
+Step 111 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39, 66, 33, 56, 31, 47] | Lookahead: RPAREN | Action: r22
+Step 112 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39, 66, 33, 56, 77] | Lookahead: RPAREN | Action: r44
+Step 113 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39, 66, 30] | Lookahead: RPAREN | Action: r42
+Step 114 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39, 66, 83] | Lookahead: RPAREN | Action: r40
+Step 115 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39, 66, 83, 92] | Lookahead: RPAREN | Action: r39
+Step 116 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 39, 65] | Lookahead: RPAREN | Action: r38
+Step 117 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 32] | Lookahead: RPAREN | Action: r37
+Step 118 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 32, 51] | Lookahead: RPAREN | Action: r35
+Step 119 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29] | Lookahead: RPAREN | Action: s46
+Step 120 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46] | Lookahead: LBRACE | Action: s3
+Step 121 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3] | Lookahead: INT | Action: s10
+Step 122 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 10] | Lookahead: ID | Action: r13
+Step 123 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 5] | Lookahead: ID | Action: s19
+Step 124 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 5, 19] | Lookahead: SEMI | Action: s26
+Step 125 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 5, 19, 26] | Lookahead: ID | Action: r12
+Step 126 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 5, 19, 28] | Lookahead: ID | Action: r10
+Step 127 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 6] | Lookahead: ID | Action: r4
+Step 128 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17] | Lookahead: ID | Action: s9
+Step 129 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 9] | Lookahead: ASSIGN | Action: s21
+Step 130 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 9, 21] | Lookahead: ID | Action: s34
+Step 131 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 9, 21, 34] | Lookahead: MULT | Action: r32
+Step 132 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 9, 21, 35] | Lookahead: MULT | Action: s62
+Step 133 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 9, 21, 35, 62] | Lookahead: INT | Action: s36
+Step 134 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 9, 21, 35, 62, 36] | Lookahead: SEMI | Action: r33
+Step 135 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 9, 21, 35, 62, 80] | Lookahead: SEMI | Action: r30
+Step 136 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 9, 21, 35, 62, 80, 91] | Lookahead: SEMI | Action: r27
+Step 137 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 9, 21, 35, 59] | Lookahead: SEMI | Action: r26
+Step 138 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 9, 21, 31] | Lookahead: SEMI | Action: r25
+Step 139 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 9, 21, 31, 47] | Lookahead: SEMI | Action: r22
+Step 140 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 9, 21, 41] | Lookahead: SEMI | Action: s68
+Step 141 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 9, 21, 41, 68] | Lookahead: IF | Action: r16
+Step 142 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 14] | Lookahead: IF | Action: r5
+Step 143 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17] | Lookahead: IF | Action: s11
+Step 144 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11] | Lookahead: LPAREN | Action: s22
+Step 145 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22] | Lookahead: LPAREN | Action: s37
+Step 146 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37] | Lookahead: ID | Action: s34
+Step 147 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 34] | Lookahead: MOD | Action: r32
+Step 148 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 35] | Lookahead: MOD | Action: s60
+Step 149 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 35, 60] | Lookahead: INT | Action: s36
+Step 150 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 35, 60, 36] | Lookahead: EQ | Action: r33
+Step 151 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 35, 60, 78] | Lookahead: EQ | Action: r30
+Step 152 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 35, 60, 78, 89] | Lookahead: EQ | Action: r29
+Step 153 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 35, 59] | Lookahead: EQ | Action: r26
+Step 154 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 31] | Lookahead: EQ | Action: r25
+Step 155 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 31, 47] | Lookahead: EQ | Action: r22
+Step 156 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 64] | Lookahead: EQ | Action: s52
+Step 157 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 64, 52] | Lookahead: INT | Action: r49
+Step 158 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 64, 56] | Lookahead: INT | Action: s36
+Step 159 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 64, 56, 36] | Lookahead: RPAREN | Action: r33
+Step 160 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 64, 56, 35] | Lookahead: RPAREN | Action: r30
+Step 161 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 64, 56, 35, 59] | Lookahead: RPAREN | Action: r26
+Step 162 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 64, 56, 31] | Lookahead: RPAREN | Action: r25
+Step 163 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 64, 56, 31, 47] | Lookahead: RPAREN | Action: r22
+Step 164 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 64, 56, 77] | Lookahead: RPAREN | Action: r44
+Step 165 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 30] | Lookahead: RPAREN | Action: r42
+Step 166 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 39] | Lookahead: RPAREN | Action: r40
+Step 167 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 39, 65] | Lookahead: RPAREN | Action: r38
+Step 168 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 32] | Lookahead: RPAREN | Action: r37
+Step 169 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 32, 51] | Lookahead: RPAREN | Action: r35
+Step 170 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 63] | Lookahead: RPAREN | Action: s81
+Step 171 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 37, 63, 81] | Lookahead: OR | Action: r43
+Step 172 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 39] | Lookahead: OR | Action: r40
+Step 173 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 39, 65] | Lookahead: OR | Action: r38
+Step 174 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32] | Lookahead: OR | Action: s50
+Step 175 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50] | Lookahead: LPAREN | Action: s37
+Step 176 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37] | Lookahead: ID | Action: s34
+Step 177 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 34] | Lookahead: GT | Action: r32
+Step 178 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 35] | Lookahead: GT | Action: r30
+Step 179 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 35, 59] | Lookahead: GT | Action: r26
+Step 180 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 31] | Lookahead: GT | Action: r25
+Step 181 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 31, 47] | Lookahead: GT | Action: r22
+Step 182 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 64] | Lookahead: GT | Action: s55
+Step 183 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 64, 55] | Lookahead: INT | Action: r46
+Step 184 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 64, 56] | Lookahead: INT | Action: s36
+Step 185 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 64, 56, 36] | Lookahead: RPAREN | Action: r33
+Step 186 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 64, 56, 35] | Lookahead: RPAREN | Action: r30
+Step 187 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 64, 56, 35, 59] | Lookahead: RPAREN | Action: r26
+Step 188 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 64, 56, 31] | Lookahead: RPAREN | Action: r25
+Step 189 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 64, 56, 31, 47] | Lookahead: RPAREN | Action: r22
+Step 190 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 64, 56, 77] | Lookahead: RPAREN | Action: r44
+Step 191 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 30] | Lookahead: RPAREN | Action: r42
+Step 192 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 39] | Lookahead: RPAREN | Action: r40
+Step 193 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 39, 65] | Lookahead: RPAREN | Action: r38
+Step 194 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 32] | Lookahead: RPAREN | Action: r37
+Step 195 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 32, 51] | Lookahead: RPAREN | Action: r35
+Step 196 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 63] | Lookahead: RPAREN | Action: s81
+Step 197 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 37, 63, 81] | Lookahead: RPAREN | Action: r43
+Step 198 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 39] | Lookahead: RPAREN | Action: r40
+Step 199 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 39, 65] | Lookahead: RPAREN | Action: r38
+Step 200 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 76] | Lookahead: RPAREN | Action: r37
+Step 201 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 50, 76, 88] | Lookahead: RPAREN | Action: r36
+Step 202 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 32, 51] | Lookahead: RPAREN | Action: r35
+Step 203 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43] | Lookahead: RPAREN | Action: s70
+Step 204 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70] | Lookahead: LBRACE | Action: s3
+Step 205 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3] | Lookahead: ID | Action: s9
+Step 206 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 9] | Lookahead: ASSIGN | Action: s21
+Step 207 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 9, 21] | Lookahead: ID | Action: s34
+Step 208 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 9, 21, 34] | Lookahead: PLUS | Action: r32
+Step 209 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 9, 21, 35] | Lookahead: PLUS | Action: r30
+Step 210 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 9, 21, 35, 59] | Lookahead: PLUS | Action: r26
+Step 211 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 9, 21, 31] | Lookahead: PLUS | Action: s48
+Step 212 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 9, 21, 31, 48] | Lookahead: ID | Action: s34
+Step 213 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 9, 21, 31, 48, 34] | Lookahead: SEMI | Action: r32
+Step 214 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 9, 21, 31, 48, 35] | Lookahead: SEMI | Action: r30
+Step 215 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 9, 21, 31, 48, 35, 59] | Lookahead: SEMI | Action: r26
+Step 216 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 9, 21, 31, 48, 74] | Lookahead: SEMI | Action: r25
+Step 217 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 9, 21, 31, 48, 74, 86] | Lookahead: SEMI | Action: r23
+Step 218 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 9, 21, 31, 47] | Lookahead: SEMI | Action: r22
+Step 219 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 9, 21, 41] | Lookahead: SEMI | Action: s68
+Step 220 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 9, 21, 41, 68] | Lookahead: RBRACE | Action: r16
+Step 221 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 14] | Lookahead: RBRACE | Action: r5
+Step 222 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 17] | Lookahead: RBRACE | Action: r3
+Step 223 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 17, 24] | Lookahead: RBRACE | Action: r2
+Step 224 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 18] | Lookahead: RBRACE | Action: s25
+Step 225 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 3, 18, 25] | Lookahead: ELSE | Action: r15
+Step 226 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 8] | Lookahead: ELSE | Action: r9
+Step 227 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84] | Lookahead: ELSE | Action: s93
+Step 228 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93] | Lookahead: LBRACE | Action: s3
+Step 229 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3] | Lookahead: ID | Action: s9
+Step 230 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 9] | Lookahead: ASSIGN | Action: s21
+Step 231 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 9, 21] | Lookahead: ID | Action: s34
+Step 232 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 9, 21, 34] | Lookahead: MINUS | Action: r32
+Step 233 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 9, 21, 35] | Lookahead: MINUS | Action: r30
+Step 234 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 9, 21, 35, 59] | Lookahead: MINUS | Action: r26
+Step 235 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 9, 21, 31] | Lookahead: MINUS | Action: s49
+Step 236 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 9, 21, 31, 49] | Lookahead: INT | Action: s36
+Step 237 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 9, 21, 31, 49, 36] | Lookahead: SEMI | Action: r33
+Step 238 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 9, 21, 31, 49, 35] | Lookahead: SEMI | Action: r30
+Step 239 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 9, 21, 31, 49, 35, 59] | Lookahead: SEMI | Action: r26
+Step 240 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 9, 21, 31, 49, 75] | Lookahead: SEMI | Action: r25
+Step 241 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 9, 21, 31, 49, 75, 87] | Lookahead: SEMI | Action: r24
+Step 242 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 9, 21, 31, 47] | Lookahead: SEMI | Action: r22
+Step 243 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 9, 21, 41] | Lookahead: SEMI | Action: s68
+Step 244 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 9, 21, 41, 68] | Lookahead: RBRACE | Action: r16
+Step 245 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 14] | Lookahead: RBRACE | Action: r5
+Step 246 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 17] | Lookahead: RBRACE | Action: r3
+Step 247 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 17, 24] | Lookahead: RBRACE | Action: r2
+Step 248 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 18] | Lookahead: RBRACE | Action: s25
+Step 249 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 3, 18, 25] | Lookahead: ID | Action: r15
+Step 250 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 8] | Lookahead: ID | Action: r9
+Step 251 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 93, 95] | Lookahead: ID | Action: r19
+Step 252 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 11, 22, 43, 70, 84, 94] | Lookahead: ID | Action: r18
+Step 253 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 15] | Lookahead: ID | Action: r6
+Step 254 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17] | Lookahead: ID | Action: s9
+Step 255 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17, 9] | Lookahead: ASSIGN | Action: s21
+Step 256 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17, 9, 21] | Lookahead: ID | Action: s34
+Step 257 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17, 9, 21, 34] | Lookahead: PLUS | Action: r32
+Step 258 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17, 9, 21, 35] | Lookahead: PLUS | Action: r30
+Step 259 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17, 9, 21, 35, 59] | Lookahead: PLUS | Action: r26
+Step 260 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17, 9, 21, 31] | Lookahead: PLUS | Action: s48
+Step 261 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17, 9, 21, 31, 48] | Lookahead: INT | Action: s36
+Step 262 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17, 9, 21, 31, 48, 36] | Lookahead: SEMI | Action: r33
+Step 263 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17, 9, 21, 31, 48, 35] | Lookahead: SEMI | Action: r30
+Step 264 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17, 9, 21, 31, 48, 35, 59] | Lookahead: SEMI | Action: r26
+Step 265 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17, 9, 21, 31, 48, 74] | Lookahead: SEMI | Action: r25
+Step 266 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17, 9, 21, 31, 48, 74, 86] | Lookahead: SEMI | Action: r23
+Step 267 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17, 9, 21, 31, 47] | Lookahead: SEMI | Action: r22
+Step 268 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17, 9, 21, 41] | Lookahead: SEMI | Action: s68
+Step 269 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17, 9, 21, 41, 68] | Lookahead: RBRACE | Action: r16
+Step 270 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17, 14] | Lookahead: RBRACE | Action: r5
+Step 271 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17, 17] | Lookahead: RBRACE | Action: r3
+Step 272 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17, 17, 24] | Lookahead: RBRACE | Action: r2
+Step 273 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 17, 24] | Lookahead: RBRACE | Action: r2
+Step 274 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 17, 24] | Lookahead: RBRACE | Action: r2
+Step 275 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 17, 24] | Lookahead: RBRACE | Action: r2
+Step 276 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 18] | Lookahead: RBRACE | Action: s25
+Step 277 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 3, 18, 25] | Lookahead: ID | Action: r15
+Step 278 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 8] | Lookahead: ID | Action: r9
+Step 279 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 7, 20, 29, 46, 73] | Lookahead: ID | Action: r21
+Step 280 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 12] | Lookahead: ID | Action: r7
+Step 281 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17] | Lookahead: ID | Action: s9
+Step 282 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9] | Lookahead: ASSIGN | Action: s21
+Step 283 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21] | Lookahead: ID | Action: s34
+Step 284 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 34] | Lookahead: DIV | Action: r32
+Step 285 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 35] | Lookahead: DIV | Action: s61
+Step 286 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 35, 61] | Lookahead: LPAREN | Action: s42
+Step 287 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 35, 61, 42] | Lookahead: ID | Action: s34
+Step 288 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 35, 61, 42, 34] | Lookahead: MINUS | Action: r32
+Step 289 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 35, 61, 42, 35] | Lookahead: MINUS | Action: r30
+Step 290 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 35, 61, 42, 35, 59] | Lookahead: MINUS | Action: r26
+Step 291 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 35, 61, 42, 31] | Lookahead: MINUS | Action: s49
+Step 292 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 35, 61, 42, 31, 49] | Lookahead: ID | Action: s34
+Step 293 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 35, 61, 42, 31, 49, 34] | Lookahead: RPAREN | Action: r32
+Step 294 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 35, 61, 42, 31, 49, 35] | Lookahead: RPAREN | Action: r30
+Step 295 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 35, 61, 42, 31, 49, 35, 59] | Lookahead: RPAREN | Action: r26
+Step 296 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 35, 61, 42, 31, 49, 75] | Lookahead: RPAREN | Action: r25
+Step 297 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 35, 61, 42, 31, 49, 75, 87] | Lookahead: RPAREN | Action: r24
+Step 298 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 35, 61, 42, 31, 47] | Lookahead: RPAREN | Action: r22
+Step 299 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 35, 61, 42, 69] | Lookahead: RPAREN | Action: s82
+Step 300 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 35, 61, 42, 69, 82] | Lookahead: SEMI | Action: r31
+Step 301 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 35, 61, 79] | Lookahead: SEMI | Action: r30
+Step 302 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 35, 61, 79, 90] | Lookahead: SEMI | Action: r28
+Step 303 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 35, 59] | Lookahead: SEMI | Action: r26
+Step 304 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 31] | Lookahead: SEMI | Action: r25
+Step 305 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 31, 47] | Lookahead: SEMI | Action: r22
+Step 306 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 41] | Lookahead: SEMI | Action: s68
+Step 307 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 9, 21, 41, 68] | Lookahead: IF | Action: r16
+Step 308 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 14] | Lookahead: IF | Action: r5
+Step 309 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17] | Lookahead: IF | Action: s11
+Step 310 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11] | Lookahead: LPAREN | Action: s22
+Step 311 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22] | Lookahead: NOT | Action: s40
+Step 312 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40] | Lookahead: LPAREN | Action: s37
+Step 313 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37] | Lookahead: ID | Action: s34
+Step 314 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 34] | Lookahead: LT | Action: r32
+Step 315 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 35] | Lookahead: LT | Action: r30
+Step 316 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 35, 59] | Lookahead: LT | Action: r26
+Step 317 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 31] | Lookahead: LT | Action: r25
+Step 318 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 31, 47] | Lookahead: LT | Action: r22
+Step 319 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 64] | Lookahead: LT | Action: s54
+Step 320 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 64, 54] | Lookahead: FLOAT | Action: r45
+Step 321 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 64, 56] | Lookahead: FLOAT | Action: s38
+Step 322 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 64, 56, 38] | Lookahead: RPAREN | Action: r34
+Step 323 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 64, 56, 35] | Lookahead: RPAREN | Action: r30
+Step 324 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 64, 56, 35, 59] | Lookahead: RPAREN | Action: r26
+Step 325 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 64, 56, 31] | Lookahead: RPAREN | Action: r25
+Step 326 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 64, 56, 31, 47] | Lookahead: RPAREN | Action: r22
+Step 327 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 64, 56, 77] | Lookahead: RPAREN | Action: r44
+Step 328 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 30] | Lookahead: RPAREN | Action: r42
+Step 329 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 39] | Lookahead: RPAREN | Action: r40
+Step 330 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 39, 65] | Lookahead: RPAREN | Action: r38
+Step 331 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 32] | Lookahead: RPAREN | Action: r37
+Step 332 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 32, 51] | Lookahead: RPAREN | Action: r35
+Step 333 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 63] | Lookahead: RPAREN | Action: s81
+Step 334 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 37, 63, 81] | Lookahead: RPAREN | Action: r43
+Step 335 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 40, 67] | Lookahead: RPAREN | Action: r41
+Step 336 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 39] | Lookahead: RPAREN | Action: r40
+Step 337 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 39, 65] | Lookahead: RPAREN | Action: r38
+Step 338 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 32] | Lookahead: RPAREN | Action: r37
+Step 339 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 32, 51] | Lookahead: RPAREN | Action: r35
+Step 340 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43] | Lookahead: RPAREN | Action: s70
+Step 341 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70] | Lookahead: LBRACE | Action: s3
+Step 342 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 3] | Lookahead: PRINT | Action: s16
+Step 343 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 3, 16] | Lookahead: LPAREN | Action: s23
+Step 344 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 3, 16, 23] | Lookahead: ID | Action: s34
+Step 345 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 3, 16, 23, 34] | Lookahead: RPAREN | Action: r32
+Step 346 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 3, 16, 23, 35] | Lookahead: RPAREN | Action: r30
+Step 347 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 3, 16, 23, 35, 59] | Lookahead: RPAREN | Action: r26
+Step 348 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 3, 16, 23, 31] | Lookahead: RPAREN | Action: r25
+Step 349 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 3, 16, 23, 31, 47] | Lookahead: RPAREN | Action: r22
+Step 350 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 3, 16, 23, 44] | Lookahead: RPAREN | Action: s71
+Step 351 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 3, 16, 23, 44, 71] | Lookahead: SEMI | Action: s85
+Step 352 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 3, 16, 23, 44, 71, 85] | Lookahead: RBRACE | Action: r17
+Step 353 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 3, 2] | Lookahead: RBRACE | Action: r8
+Step 354 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 3, 17] | Lookahead: RBRACE | Action: r3
+Step 355 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 3, 17, 24] | Lookahead: RBRACE | Action: r2
+Step 356 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 3, 18] | Lookahead: RBRACE | Action: s25
+Step 357 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 3, 18, 25] | Lookahead: ELSE | Action: r15
+Step 358 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 8] | Lookahead: ELSE | Action: r9
+Step 359 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84] | Lookahead: ELSE | Action: s93
+Step 360 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 93] | Lookahead: LBRACE | Action: s3
+Step 361 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 93, 3] | Lookahead: PRINT | Action: s16
+Step 362 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 93, 3, 16] | Lookahead: LPAREN | Action: s23
+Step 363 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 93, 3, 16, 23] | Lookahead: ID | Action: s34
+Step 364 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 93, 3, 16, 23, 34] | Lookahead: RPAREN | Action: r32
+Step 365 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 93, 3, 16, 23, 35] | Lookahead: RPAREN | Action: r30
+Step 366 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 93, 3, 16, 23, 35, 59] | Lookahead: RPAREN | Action: r26
+Step 367 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 93, 3, 16, 23, 31] | Lookahead: RPAREN | Action: r25
+Step 368 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 93, 3, 16, 23, 31, 47] | Lookahead: RPAREN | Action: r22
+Step 369 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 93, 3, 16, 23, 44] | Lookahead: RPAREN | Action: s71
+Step 370 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 93, 3, 16, 23, 44, 71] | Lookahead: SEMI | Action: s85
+Step 371 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 93, 3, 16, 23, 44, 71, 85] | Lookahead: RBRACE | Action: r17
+Step 372 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 93, 3, 2] | Lookahead: RBRACE | Action: r8
+Step 373 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 93, 3, 17] | Lookahead: RBRACE | Action: r3
+Step 374 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 93, 3, 17, 24] | Lookahead: RBRACE | Action: r2
+Step 375 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 93, 3, 18] | Lookahead: RBRACE | Action: s25
+Step 376 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 93, 3, 18, 25] | Lookahead: $ | Action: r15
+Step 377 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 93, 8] | Lookahead: $ | Action: r9
+Step 378 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 93, 95] | Lookahead: $ | Action: r19
+Step 379 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 11, 22, 43, 70, 84, 94] | Lookahead: $ | Action: r18
+Step 380 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 15] | Lookahead: $ | Action: r6
+Step 381 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17] | Lookahead: $ | Action: r3
+Step 382 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 24] | Lookahead: $ | Action: r2
+Step 383 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 17, 24] | Lookahead: $ | Action: r2
+Step 384 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 17, 24] | Lookahead: $ | Action: r2
+Step 385 | Stack: [0, 17, 17, 17, 17, 17, 17, 17, 24] | Lookahead: $ | Action: r2
+Step 386 | Stack: [0, 17, 17, 17, 17, 17, 17, 24] | Lookahead: $ | Action: r2
+Step 387 | Stack: [0, 17, 17, 17, 17, 17, 24] | Lookahead: $ | Action: r2
+Step 388 | Stack: [0, 17, 17, 17, 17, 24] | Lookahead: $ | Action: r2
+Step 389 | Stack: [0, 17, 17, 17, 24] | Lookahead: $ | Action: r2
+Step 390 | Stack: [0, 17, 17, 24] | Lookahead: $ | Action: r2
+Step 391 | Stack: [0, 17, 24] | Lookahead: $ | Action: r2
+Step 392 | Stack: [0, 1] | Lookahead: $ | Action: r1
+Step 393 | Stack: [0, 4] | Lookahead: $ | Action: acc

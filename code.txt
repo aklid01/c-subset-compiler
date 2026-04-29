@@ -1,0 +1,17 @@
+int x;
+int y;
+float avg;
+int x;
+int y;
+x = 3.7;
+float k=9;
+avg = 10;
+while (avg == 2.5) {
+int temp;
+temp = avg * 2;
+if (temp != 1.0) {
+print(z);
+} else {
+print(temp);
+}
+}
