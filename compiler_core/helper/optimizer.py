@@ -185,41 +185,30 @@ def optimize(quads: list[list[str]]) -> tuple[list[list[str]], str]:
     lines.append("─" * width)
 
     current_quads = copy.deepcopy(quads)
-    pass_index = 1
-    while True:
-        next_quads, fold_log = constant_folding(current_quads)
-        next_quads, prop_log = constant_propagation(next_quads)
 
-        if next_quads == current_quads:
-            break
+    # Pass 1 – Folding and Propagation
+    next_quads, fold_log1 = constant_folding(current_quads)
+    current_quads, prop_log1 = constant_propagation(next_quads)
 
-        if pass_index == 1:
-            lines.append("\n  Pass 1 – Constant Folding")
-            lines.append("  " + "─" * (width - 2))
-            lines += fold_log if fold_log else ["  (nothing to fold)"]
+    # Pass 2 (repeat) – Folding and Propagation
+    next_quads, fold_log2 = constant_folding(current_quads)
+    current_quads, prop_log2 = constant_propagation(next_quads)
 
-            lines.append("\n  Pass 2 – Constant Propagation")
-            lines.append("  " + "─" * (width - 2))
-            lines += prop_log if prop_log else ["  (nothing to propagate)"]
-        elif pass_index == 2:
-            lines.append("\n  Pass 1 (repeat) – Constant Folding on propagated values")
-            lines.append("  " + "─" * (width - 2))
-            lines += fold_log if fold_log else ["  (nothing new to fold)"]
+    lines.append("\n  Pass 1 – Constant Folding")
+    lines.append("  " + "─" * (width - 2))
+    lines += fold_log1 if fold_log1 else ["  (nothing to fold)"]
 
-            lines.append("\n  Pass 2 (repeat) – Constant Propagation")
-            lines.append("  " + "─" * (width - 2))
-            lines += prop_log if prop_log else ["  (nothing new to propagate)"]
-        else:
-            lines.append(f"\n  Pass {2 * pass_index - 1} – Constant Folding")
-            lines.append("  " + "─" * (width - 2))
-            lines += fold_log if fold_log else ["  (nothing new to fold)"]
+    lines.append("\n  Pass 2 – Constant Propagation")
+    lines.append("  " + "─" * (width - 2))
+    lines += prop_log1 if prop_log1 else ["  (nothing to propagate)"]
 
-            lines.append(f"\n  Pass {2 * pass_index} – Constant Propagation")
-            lines.append("  " + "─" * (width - 2))
-            lines += prop_log if prop_log else ["  (nothing new to propagate)"]
+    lines.append("\n  Pass 1 (repeat) – Constant Folding on propagated values")
+    lines.append("  " + "─" * (width - 2))
+    lines += fold_log2 if fold_log2 else ["  (nothing new to fold)"]
 
-        current_quads = next_quads
-        pass_index += 1
+    lines.append("\n  Pass 2 (repeat) – Constant Propagation")
+    lines.append("  " + "─" * (width - 2))
+    lines += prop_log2 if prop_log2 else ["  (nothing new to propagate)"]
 
     lines.append("\n  Pass 3 – Dead Code Elimination")
     lines.append("  " + "─" * (width - 2))
@@ -242,7 +231,7 @@ def optimize_capture(quads: list[list[str]]) -> "PhaseCapture":
     current_quads = copy.deepcopy(quads)
     pass_index = 1
 
-    while True:
+    for pass_index in (1, 2):
         # Constant Folding step-by-step
         folded_quads = copy.deepcopy(current_quads)
         for i, q in enumerate(folded_quads):
@@ -343,11 +332,7 @@ def optimize_capture(quads: list[list[str]]) -> "PhaseCapture":
             elif str(res) not in ("-", "PENDING", "") and op not in _ALWAYS_KEEP:
                 const_map.pop(str(res), None)
 
-        if propagated_quads == current_quads:
-            break
-
         current_quads = propagated_quads
-        pass_index += 1
 
     # Dead Code Elimination step-by-step
     dce_quads = copy.deepcopy(current_quads)
