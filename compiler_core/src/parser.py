@@ -14,7 +14,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from compiler_core.frames import PhaseCapture
 
-import pandas as pd
 
 from compiler_core.src.constants import CONSOLE_TRACE_LIMIT, RELOPS, REPORT_WIDTH
 from compiler_core.src.semantics import check_bool_condition
@@ -490,15 +489,42 @@ class LL1Parser:
 
     def display_parsing_table(self):
         print("\n--- LL(1) PARSING TABLE ---")
-        data = {}
+        active_cols = []
+        for t in self.terminals:
+            has_prod = False
+            for nt in self.non_terminals:
+                if self.table.get((nt, t)):
+                    has_prod = True
+                    break
+            if has_prod:
+                active_cols.append(t)
+
+        if not active_cols:
+            print("No parsing table entries.")
+            return
+
+        col_widths = {t: len(t) for t in active_cols}
+        row_label_width = max(len(nt) for nt in self.non_terminals)
+
         for nt in self.non_terminals:
-            data[nt] = {}
-            for t in self.terminals:
+            for t in active_cols:
                 prod = self.table.get((nt, t))
-                data[nt][t] = " ".join(prod) if prod else "-"
-        df = pd.DataFrame.from_dict(data, orient="index")
-        df = df.loc[:, (df != "-").any(axis=0)]
-        print(df.to_string())
+                prod_str = " ".join(prod) if prod else "-"
+                col_widths[t] = max(col_widths[t], len(prod_str))
+
+        header = f"{'':<{row_label_width}}  " + "  ".join(
+            f"{t:<{col_widths[t]}}" for t in active_cols
+        )
+        print(header)
+        print("-" * len(header))
+
+        for nt in self.non_terminals:
+            row_parts = []
+            for t in active_cols:
+                prod = self.table.get((nt, t))
+                prod_str = " ".join(prod) if prod else "-"
+                row_parts.append(f"{prod_str:<{col_widths[t]}}")
+            print(f"{nt:<{row_label_width}}  " + "  ".join(row_parts))
 
     def display_sets(self):
         print("\n--- FIRST SETS ---")

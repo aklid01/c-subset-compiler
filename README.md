@@ -251,7 +251,7 @@ It includes instructions such as:
 
 ## Troubleshooting
 
-- `ModuleNotFoundError: No module named 'pandas'`
+- `ModuleNotFoundError: No module named 'textual'` or `rich`
   - Install dependencies again: `pip install -r requirements.txt`
 - `python` command not found
   - Use `python3` instead on macOS/Linux.
