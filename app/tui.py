@@ -57,7 +57,7 @@ class VisualizerApp(App):
         height: 100%;
     }
     #step_info {
-        height: 5;
+        height: 6;
         background: #1a1a1a;
         border: tall #007acc;
         content-align: center middle;
@@ -133,6 +133,19 @@ class VisualizerApp(App):
         self.query_one("#assembly_code_viewer", NonFocusTextArea).border_title = (
             "Emitted Target Assembly Code (Full Stream)"
         )
+
+        # Warning toast if input has compile errors
+        has_errors = (
+            any(not cap.success for cap in self.session.captures.values())
+            or "code_gen" not in self.session.captures
+        )
+        if has_errors:
+            self.notify(
+                "Loaded code contains compilation errors. Check warning banners.",
+                title="Errors Detected",
+                severity="warning",
+                timeout=8.0,
+            )
         self.update_ui()
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
@@ -169,19 +182,37 @@ class VisualizerApp(App):
         frame_idx = self.session.frame_index
         capture = self.session.captures.get(phase) if phase else None
 
+        has_errors = (
+            any(not cap.success for cap in self.session.captures.values())
+            or "code_gen" not in self.session.captures
+        )
+
         if not capture:
             self.query_one("#assembly_code_viewer", NonFocusTextArea).display = False
+
+            info_text = Text.assemble(
+                ("[Skipped] ", "bold red"),
+                (
+                    f"Phase {self.phase_map.get(phase, phase)} was not executed",
+                    "bold white",
+                ),
+            )
+            if has_errors:
+                info_text.append(
+                    "\n⚠ WARNING: Loaded input code has compilation/semantic errors!",
+                    style="bold red",
+                )
+                border_style = "red"
+                border_title = "Current Step Action [WARNING: ERROR DETECTED]"
+            else:
+                border_style = "red"
+                border_title = "Current Step Action"
+
             self.query_one("#step_info", Static).update(
                 Panel(
-                    Text.assemble(
-                        ("[Skipped] ", "bold red"),
-                        (
-                            f"Phase {self.phase_map.get(phase, phase)} was not executed",
-                            "bold white",
-                        ),
-                    ),
-                    title="Current Step Action",
-                    border_style="red",
+                    info_text,
+                    title=border_title,
+                    border_style=border_style,
                 )
             )
             self.query_one("#source_code", TextArea).text = self.session.source
@@ -199,11 +230,26 @@ class VisualizerApp(App):
         # Update step info header
         step_title = frame.title if frame else "End of Phase"
         total_steps_str = f"Step {frame_idx + 1}/{frames_count}" if frames_count else "No Steps"
+
+        info_text = Text.assemble(
+            (f"[{total_steps_str}] ", "bold cyan"), (step_title, "bold white")
+        )
+        if has_errors:
+            info_text.append(
+                "\n⚠ WARNING: Loaded input code has compilation/semantic errors!",
+                style="bold red",
+            )
+            border_style = "red"
+            border_title = "Current Step Action [WARNING: ERROR DETECTED]"
+        else:
+            border_style = "bright_blue"
+            border_title = "Current Step Action"
+
         self.query_one("#step_info", Static).update(
             Panel(
-                Text.assemble((f"[{total_steps_str}] ", "bold cyan"), (step_title, "bold white")),
-                title="Current Step Action",
-                border_style="bright_blue",
+                info_text,
+                title=border_title,
+                border_style=border_style,
             )
         )
 
