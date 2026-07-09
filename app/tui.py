@@ -21,6 +21,10 @@ from rich.table import Table
 from rich.text import Text
 
 
+class NonFocusTextArea(TextArea):
+    can_focus = False
+
+
 class VisualizerApp(App):
     """The interactive TUI visualizer dashboard for C-Subset Compiler."""
 
@@ -107,7 +111,7 @@ class VisualizerApp(App):
                 yield Static(id="step_info")
                 with Horizontal(id="middle_container"):
                     yield Static(id="state_context")
-                    yield TextArea(
+                    yield NonFocusTextArea(
                         self.session.source,
                         language="c",
                         id="source_code",
@@ -215,6 +219,17 @@ class VisualizerApp(App):
 
         # Update state context panel
         self.update_context_pane(phase, frame)
+
+        # Auto-scroll state context to track active step or bottom of container
+        state_widget = self.query_one("#state_context", Static)
+        if phase in ("tac", "optimizer") and frame and frame.detail:
+            idx = frame.detail.get("index")
+            if idx is not None:
+                viewport_height = state_widget.size.height or 15
+                target_y = max(0, idx - (viewport_height // 2))
+                self.call_after_refresh(state_widget.scroll_to, y=target_y, animate=False)
+        else:
+            self.call_after_refresh(state_widget.scroll_end, animate=False)
 
     def update_context_pane(self, phase: str, frame: StepFrame | None) -> None:
         if not frame:
