@@ -5,7 +5,13 @@ and three-address code (TAC) generation with semantic checking.
 This is the third stage in the compiler pipeline.
 """
 
+from __future__ import annotations
+
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from compiler_core.frames import PhaseCapture
 
 from compiler_core.helper.tac_manager import TACManager
 from compiler_core.src.constants import CONSOLE_TRACE_LIMIT, RELOPS, REPORT_WIDTH
@@ -108,7 +114,9 @@ class SLRParser:
                                 self.action_table[(i, term)] = f"r{r_idx}"
             i += 1
 
-    def _run_parse_loop(self) -> tuple[bool, list[dict], TACManager]:
+    def _run_parse_loop(
+        self, capture_list: list = None, tac_capture_list: list = None
+    ) -> tuple[bool, list[dict], TACManager]:
         stack = [0]
         trace_log = []
         step = 0
@@ -119,7 +127,7 @@ class SLRParser:
         self.in_condition = False
         self.cond_paren_depth = 0
 
-        tac = TACManager()
+        tac = TACManager(capture_list=tac_capture_list)
 
         relop_shifted = None
         relexpr_lhs_tok = None
@@ -144,6 +152,35 @@ class SLRParser:
                     "val": token_val,
                 }
             )
+
+            if capture_list is not None:
+                from compiler_core.frames import StepFrame
+
+                sym_table_snap = [
+                    {
+                        "name": sym.name,
+                        "type": sym.data_type,
+                        "scope": sym.scope_level,
+                        "offset": sym.offset,
+                    }
+                    for name, sym in self.symbol_table.history
+                ]
+                capture_list.append(
+                    StepFrame(
+                        phase="slr_parser",
+                        index=len(capture_list),
+                        title=f"Step {step}: {action if action else 'ERROR'}",
+                        detail=trace_log[-1],
+                        context={
+                            "stack": list(stack),
+                            "semantic_stack": list(semantic_stack),
+                            "control_stack": list(control_stack),
+                            "symbol_table": sym_table_snap,
+                            "semantic_errors": list(self.semantic_errors),
+                            "tac": [list(q) for q in tac.quads],
+                        },
+                    )
+                )
 
             if action and action.startswith("s"):
                 stack.append(int(action[1:]))
@@ -324,6 +361,26 @@ class SLRParser:
             print(f"[Fail] {failed['action']}")
             print("[Fail] Parsing failed. No trace file was generated.")
         return success, tac
+
+    def parse_capture(self, tac_capture_list: list = None) -> "PhaseCapture":
+        """Parse token stream and return PhaseCapture containing StepFrames for SLR(1) parsing."""
+        from compiler_core.frames import PhaseCapture
+
+        frames = []
+        success, _, tac = self._run_parse_loop(
+            capture_list=frames, tac_capture_list=tac_capture_list
+        )
+        final_output = []
+        if self.semantic_errors:
+            final_output.append(f"  Total errors found: {len(self.semantic_errors)}")
+            for err in self.semantic_errors:
+                final_output.append(f"    {err}")
+        return PhaseCapture(
+            name="slr_parser",
+            frames=frames,
+            success=success,
+            final_output=final_output,
+        )
 
     def print_semantic_errors(self):
 

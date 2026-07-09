@@ -4,7 +4,13 @@ Generates pseudo-assembly target code from optimized Three-Address Code (TAC),
 performing liveness analysis and register allocation.
 """
 
+from __future__ import annotations
+
 import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from compiler_core.frames import PhaseCapture
 
 from compiler_core.src.constants import NUM_REGS
 
@@ -227,3 +233,115 @@ def save(instrs: list[str], path: str = "./output/target_output.txt") -> None:
         f.write("=" * 62 + "\n")
         f.write(f"Total instructions : {len(instrs)}\n")
     print(f"[Success] Target code written to {path}")
+
+
+def generate_capture(quads: list[list[str]]) -> "PhaseCapture":
+    """Generate pseudo-assembly and return a PhaseCapture containing StepFrames."""
+    from compiler_core.frames import PhaseCapture, StepFrame
+
+    live_after = _compute_liveness(quads)
+    ra = RegisterAllocator()
+    instrs = []
+    frames = []
+
+    for idx, q in enumerate(quads):
+        op, arg1, arg2, res = [str(x) for x in q]
+        live = live_after[idx]
+
+        start_instr_idx = len(instrs)
+
+        if op == "LABEL":
+            instrs.append(f"{res}:")
+        elif op == "GOTO":
+            instrs.append(f"    JMP    {res}")
+        elif op == "IF_FALSE":
+            r = ra.load(arg1, instrs, live)
+            instrs.append(f"    JZ     {r}, {res}")
+        elif op == "=":
+            if _is_imm(arg1):
+                rd = ra.alloc_result(res, instrs, live)
+                instrs.append(f"    LOAD   {rd}, {arg1}")
+            else:
+                rs = ra.load(arg1, instrs, live)
+                rd = ra.alloc_result(res, instrs, live)
+                if rd != rs:
+                    instrs.append(f"    MOV    {rd}, {rs}")
+            if not res.startswith("t"):
+                instrs.append(f"    STORE  {rd}, {res}")
+                ra.mark_stored(res)
+
+        elif op in _ARITH_MAP:
+            ra_r = ra.get_operand(arg1, instrs, live, idx)
+            rb_r = ra.get_operand(arg2, instrs, live, idx)
+            rd = ra.alloc_result(res, instrs, live)
+            instrs.append(f"    {_ARITH_MAP[op]:<6} {rd}, {ra_r}, {rb_r}")
+
+        elif op in _RELOP_MAP:
+            ra_r = ra.get_operand(arg1, instrs, live, idx)
+            rb_r = ra.get_operand(arg2, instrs, live, idx)
+            rd = ra.alloc_result(res, instrs, live)
+            instrs.append(f"    {_RELOP_MAP[op]:<6} {rd}, {ra_r}, {rb_r}")
+
+        elif op == "&&":
+            ra_r = ra.load(arg1, instrs, live)
+            rb_r = ra.load(arg2, instrs, live)
+            rd = ra.alloc_result(res, instrs, live)
+            instrs.append(f"    AND    {rd}, {ra_r}, {rb_r}")
+
+        elif op == "||":
+            ra_r = ra.load(arg1, instrs, live)
+            rb_r = ra.load(arg2, instrs, live)
+            rd = ra.alloc_result(res, instrs, live)
+            instrs.append(f"    OR     {rd}, {ra_r}, {rb_r}")
+
+        elif op == "NOT":
+            ra_r = ra.load(arg1, instrs, live)
+            rd = ra.alloc_result(res, instrs, live)
+            instrs.append(f"    NOT    {rd}, {ra_r}")
+
+        elif op == "PRINT":
+            rs = ra.load(arg1, instrs, live)
+            instrs.append(f"    PRINT  {rs}")
+
+        # Evict non-live names
+        for r in list(ra._regs):
+            name = ra._reg_to_name[r]
+            if name and name not in live:
+                ra._evict(r, instrs, live)
+
+        step_instrs = instrs[start_instr_idx:]
+        frames.append(
+            StepFrame(
+                phase="code_gen",
+                index=len(frames),
+                title=f"Gen Target for Quad {idx}: {op}",
+                detail={
+                    "quad": q,
+                    "generated_instructions": step_instrs,
+                    "index": idx,
+                },
+                context={
+                    "instructions": list(instrs),
+                    "registers": {r: n for r, n in ra._reg_to_name.items() if n is not None},
+                },
+            )
+        )
+
+    # final target output format
+    final_lines = []
+    width = 62
+    final_lines.append("═" * width)
+    final_lines.append(" TARGET CODE  (Pseudo-Assembly) ".center(width, "═"))
+    final_lines.append("═" * width)
+    for inst in instrs:
+        final_lines.append(inst)
+    final_lines.append("═" * width)
+    final_lines.append(f"  Total instructions : {len(instrs)}")
+    final_lines.append("═" * width + "\n")
+
+    return PhaseCapture(
+        name="code_gen",
+        frames=frames,
+        success=True,
+        final_output=final_lines,
+    )

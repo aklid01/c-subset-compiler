@@ -4,7 +4,13 @@ Provides constant folding, constant propagation, and dead code elimination (DCE)
 passes to optimize generated Three-Address Code (TAC).
 """
 
+from __future__ import annotations
+
 import copy
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from compiler_core.frames import PhaseCapture
 
 _ARITH_OPS = {"+", "-", "*", "/", "%"}
 _RELOP_OPS = {"<", ">", "<=", ">=", "==", "!="}
@@ -226,3 +232,181 @@ def optimize(quads: list[list[str]]) -> tuple[list[list[str]], str]:
     lines.append("═" * width + "\n")
 
     return final_quads, "\n".join(lines)
+
+
+def optimize_capture(quads: list[list[str]]) -> "PhaseCapture":
+    """Optimize Three-Address Code and return PhaseCapture with step-by-step StepFrames."""
+    from compiler_core.frames import PhaseCapture, StepFrame
+
+    frames = []
+    current_quads = copy.deepcopy(quads)
+    pass_index = 1
+
+    while True:
+        # Constant Folding step-by-step
+        folded_quads = copy.deepcopy(current_quads)
+        for i, q in enumerate(folded_quads):
+            op, arg1, arg2, res = q
+            if op in _ARITH_OPS and _is_const(arg1) and _is_const(arg2):
+                val = _eval_arith(op, _as_num(arg1), _as_num(arg2))
+                if val is not None:
+                    before = list(folded_quads[i])
+                    folded_quads[i] = ["=", _fmt(val), "-", res]
+                    frames.append(
+                        StepFrame(
+                            phase="optimizer",
+                            index=len(frames),
+                            title=f"Constant Folding (Pass {pass_index})",
+                            detail={
+                                "msg": f"Folded {arg1} {op} {arg2} to {_fmt(val)} at index {i}",
+                                "before": before,
+                                "after": list(folded_quads[i]),
+                                "index": i,
+                            },
+                            context={"quads": copy.deepcopy(folded_quads)},
+                        )
+                    )
+            elif op in _RELOP_OPS and _is_const(arg1) and _is_const(arg2):
+                val = _eval_relop(op, _as_num(arg1), _as_num(arg2))
+                if val is not None:
+                    before = list(folded_quads[i])
+                    folded_quads[i] = ["=", str(val), "-", res]
+                    frames.append(
+                        StepFrame(
+                            phase="optimizer",
+                            index=len(frames),
+                            title=f"Constant Folding (Pass {pass_index})",
+                            detail={
+                                "msg": f"Folded {arg1} {op} {arg2} to {val} at index {i}",
+                                "before": before,
+                                "after": list(folded_quads[i]),
+                                "index": i,
+                            },
+                            context={"quads": copy.deepcopy(folded_quads)},
+                        )
+                    )
+
+        # Constant Propagation step-by-step
+        propagated_quads = copy.deepcopy(folded_quads)
+        const_map = {}
+        jump_targets = {
+            str(q[3]) for q in propagated_quads if q[0] in ("IF_FALSE", "IF_TRUE", "GOTO")
+        }
+
+        for i, q in enumerate(propagated_quads):
+            op, arg1, arg2, res = q
+            if op == "LABEL" and str(res) in jump_targets:
+                const_map.clear()
+                continue
+
+            new_arg1, new_arg2 = str(arg1), str(arg2)
+            before = list(propagated_quads[i])
+            if op not in _ALWAYS_KEEP:
+                if str(arg1) in const_map:
+                    new_arg1 = const_map[str(arg1)]
+                    propagated_quads[i][1] = new_arg1
+                    frames.append(
+                        StepFrame(
+                            phase="optimizer",
+                            index=len(frames),
+                            title=f"Constant Propagation (Pass {pass_index})",
+                            detail={
+                                "msg": f"Propagated constant '{new_arg1}' to arg1 at index {i}",
+                                "before": before,
+                                "after": list(propagated_quads[i]),
+                                "index": i,
+                            },
+                            context={"quads": copy.deepcopy(propagated_quads)},
+                        )
+                    )
+                    before = list(propagated_quads[i])
+                if str(arg2) in const_map and str(arg2) != "-":
+                    new_arg2 = const_map[str(arg2)]
+                    propagated_quads[i][2] = new_arg2
+                    frames.append(
+                        StepFrame(
+                            phase="optimizer",
+                            index=len(frames),
+                            title=f"Constant Propagation (Pass {pass_index})",
+                            detail={
+                                "msg": f"Propagated constant '{new_arg2}' to arg2 at index {i}",
+                                "before": before,
+                                "after": list(propagated_quads[i]),
+                                "index": i,
+                            },
+                            context={"quads": copy.deepcopy(propagated_quads)},
+                        )
+                    )
+
+            if op == "=" and _is_const(propagated_quads[i][1]) and str(res) not in ("-", "PENDING"):
+                const_map[str(res)] = str(propagated_quads[i][1])
+            elif str(res) not in ("-", "PENDING", "") and op not in _ALWAYS_KEEP:
+                const_map.pop(str(res), None)
+
+        if propagated_quads == current_quads:
+            break
+
+        current_quads = propagated_quads
+        pass_index += 1
+
+    # Dead Code Elimination step-by-step
+    dce_quads = copy.deepcopy(current_quads)
+
+    def _uses(q):
+        op, arg1, arg2, res = q
+        used = set()
+        if op == "IF_FALSE" or op == "IF_TRUE":
+            used.add(str(arg1))
+        elif op == "PRINT":
+            used.add(str(arg1))
+        elif op not in _ALWAYS_KEEP:
+            if str(arg1) != "-":
+                used.add(str(arg1))
+            if str(arg2) != "-":
+                used.add(str(arg2))
+        return used
+
+    def _def(q):
+        op, arg1, arg2, res = q
+        if op in _ALWAYS_KEEP:
+            return None
+        r = str(res)
+        return r if r not in ("-", "PENDING", "") else None
+
+    changed = True
+    while changed:
+        changed = False
+        all_used = set()
+        for q in dce_quads:
+            all_used |= _uses(q)
+
+        new_quads = []
+        for i, q in enumerate(dce_quads):
+            d = _def(q)
+            if d and d.startswith("t") and d not in all_used and q[0] not in _ALWAYS_KEEP:
+                changed = True
+                frames.append(
+                    StepFrame(
+                        phase="optimizer",
+                        index=len(frames),
+                        title="Dead Code Elimination",
+                        detail={
+                            "msg": f"Removed dead definition of temporary '{d}' at index {i}",
+                            "before": list(q),
+                            "after": None,
+                            "index": i,
+                        },
+                        context={"quads": copy.deepcopy(new_quads + dce_quads[i + 1 :])},
+                    )
+                )
+            else:
+                new_quads.append(q)
+        dce_quads = new_quads
+
+    opt_quads, report = optimize(quads)
+    return PhaseCapture(
+        name="optimizer",
+        frames=frames,
+        success=True,
+        final_output=report.splitlines(),
+    )

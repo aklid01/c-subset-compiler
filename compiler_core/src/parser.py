@@ -5,8 +5,14 @@ with first/follow set generation and semantic type checks.
 This is the second stage in the compiler pipeline.
 """
 
+from __future__ import annotations
+
 import os
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from compiler_core.frames import PhaseCapture
 
 import pandas as pd
 
@@ -188,7 +194,7 @@ class LL1Parser:
             res.add("ε")
         return res
 
-    def _run_parse_loop(self) -> tuple[bool, list[dict]]:
+    def _run_parse_loop(self, capture_list: list = None) -> tuple[bool, list[dict]]:
         stack = ["$", "Program"]
         trace_log = []
         step = 0
@@ -244,6 +250,31 @@ class LL1Parser:
                     "val": raw_val,
                 }
             )
+
+            if capture_list is not None:
+                from compiler_core.frames import StepFrame
+
+                sym_table_snap = [
+                    {
+                        "name": sym.name,
+                        "type": sym.data_type,
+                        "scope": sym.scope_level,
+                        "offset": sym.offset,
+                    }
+                    for name, sym in self.symbol_table.history
+                ]
+                capture_list.append(
+                    StepFrame(
+                        phase="ll1_parser",
+                        index=len(capture_list),
+                        title=f"Step {step}: {action_str}",
+                        detail=trace_log[-1],
+                        context={
+                            "symbol_table": sym_table_snap,
+                            "semantic_errors": list(self.semantic_errors),
+                        },
+                    )
+                )
 
             if "Error" in action_str or success:
                 break
@@ -416,6 +447,21 @@ class LL1Parser:
             print(f"[Fail] {failed['action']}")
             print("[Fail] Parsing failed. No trace file was generated.")
         return success
+
+    def parse_capture(self) -> "PhaseCapture":
+        """Parse token stream and return PhaseCapture containing StepFrames for LL(1) parsing."""
+        from compiler_core.frames import PhaseCapture
+
+        frames = []
+        success, _ = self._run_parse_loop(capture_list=frames)
+        final_output = []
+        if self.semantic_errors:
+            final_output.append(f"  Total errors found: {len(self.semantic_errors)}")
+            for err in self.semantic_errors:
+                final_output.append(f"    {err}")
+        return PhaseCapture(
+            name="ll1_parser", frames=frames, success=success, final_output=final_output
+        )
 
     def print_semantic_errors(self):
 

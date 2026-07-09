@@ -15,10 +15,11 @@ _COL_W = 10
 
 
 class TACManager:
-    def __init__(self):
+    def __init__(self, capture_list: list = None):
         self.quads: list[list[str]] = []
         self.temp_count = 0
         self.label_count = 0
+        self.capture_list = capture_list
 
     def new_temp(self) -> str:
         """Allocate a new temporary variable name."""
@@ -33,11 +34,36 @@ class TACManager:
     def emit(self, op: str, arg1: str, arg2: str, res: str) -> int:
         """Emit a TAC quadruple and return its index."""
         self.quads.append([op, arg1, arg2, res])
-        return len(self.quads) - 1
+        idx = len(self.quads) - 1
+        if self.capture_list is not None:
+            from compiler_core.frames import StepFrame
+
+            self.capture_list.append(
+                StepFrame(
+                    phase="tac",
+                    index=len(self.capture_list),
+                    title=f"Emit Quad: ({op}, {arg1}, {arg2}, {res})",
+                    detail={"op": op, "arg1": arg1, "arg2": arg2, "res": res, "index": idx},
+                    context={"quads": [list(q) for q in self.quads]},
+                )
+            )
+        return idx
 
     def backpatch(self, quad_index: int, target_label: str) -> None:
         """Backpatch the target label of a previously emitted pending quad."""
         self.quads[quad_index][3] = target_label
+        if self.capture_list is not None:
+            from compiler_core.frames import StepFrame
+
+            self.capture_list.append(
+                StepFrame(
+                    phase="tac",
+                    index=len(self.capture_list),
+                    title=f"Backpatch Quad {quad_index} with {target_label}",
+                    detail={"index": quad_index, "label": target_label},
+                    context={"quads": [list(q) for q in self.quads]},
+                )
+            )
 
     def _header(self):
         sep = "─" * (8 + 1 + (_COL_W + 3) * 4)
