@@ -127,6 +127,15 @@ class RegisterAllocator:
     def mark_stored(self, name):
         self._name_locs.setdefault(name, set()).add("mem")
 
+    def get_operand(self, val: str, instrs: list[str], live_names: set[str], idx: int) -> str:
+        """Get register containing operand value, loading/allocating as needed."""
+        if _is_imm(val):
+            reg = self.alloc_result(f"__imm_{idx}_{val}", instrs, live_names)
+            instrs.append(f"    LOAD   {reg}, {val}")
+            return reg
+        else:
+            return self.load(val, instrs, live_names)
+
 
 def generate(quads: list[list[str]]) -> list[str]:
     """Generate pseudo-assembly instructions from TAC quadruples."""
@@ -137,14 +146,6 @@ def generate(quads: list[list[str]]) -> list[str]:
     for idx, q in enumerate(quads):
         op, arg1, arg2, res = [str(x) for x in q]
         live = live_after[idx]
-
-        def get_operand(val):
-            if _is_imm(val):
-                reg = ra.alloc_result(f"__imm_{idx}_{val}", instrs, live)
-                instrs.append(f"    LOAD   {reg}, {val}")
-                return reg
-            else:
-                return ra.load(val, instrs, live)
 
         if op == "LABEL":
             instrs.append(f"{res}:")
@@ -167,14 +168,14 @@ def generate(quads: list[list[str]]) -> list[str]:
                 ra.mark_stored(res)
 
         elif op in _ARITH_MAP:
-            ra_r = get_operand(arg1)
-            rb_r = get_operand(arg2)
+            ra_r = ra.get_operand(arg1, instrs, live, idx)
+            rb_r = ra.get_operand(arg2, instrs, live, idx)
             rd = ra.alloc_result(res, instrs, live)
             instrs.append(f"    {_ARITH_MAP[op]:<6} {rd}, {ra_r}, {rb_r}")
 
         elif op in _RELOP_MAP:
-            ra_r = get_operand(arg1)
-            rb_r = get_operand(arg2)
+            ra_r = ra.get_operand(arg1, instrs, live, idx)
+            rb_r = ra.get_operand(arg2, instrs, live, idx)
             rd = ra.alloc_result(res, instrs, live)
             instrs.append(f"    {_RELOP_MAP[op]:<6} {rd}, {ra_r}, {rb_r}")
 

@@ -39,6 +39,8 @@ class SLRParser:
         self.states = []
         self.action_table = {}
         self.goto_table = {}
+        self.in_condition = False
+        self.cond_paren_depth = 0
         self._build_tables()
 
     def _closure(self, items):
@@ -114,8 +116,8 @@ class SLRParser:
         semantic_stack = []
         control_stack = []
 
-        in_condition = False
-        cond_paren_depth = 0
+        self.in_condition = False
+        self.cond_paren_depth = 0
 
         tac = TACManager()
 
@@ -147,36 +149,7 @@ class SLRParser:
                 stack.append(int(action[1:]))
                 semantic_stack.append(token_val)
 
-                if lookahead == "WHILE":
-                    start_label = tac.new_label()
-                    tac.emit("LABEL", "-", "-", start_label)
-                    control_stack.append(start_label)
-                    in_condition = True
-                    cond_paren_depth = 0
-
-                if lookahead == "IF":
-                    in_condition = True
-                    cond_paren_depth = 0
-
-                if lookahead == "LPAREN" and in_condition:
-                    cond_paren_depth += 1
-
-                if lookahead == "RPAREN" and in_condition:
-                    cond_paren_depth -= 1
-                    if cond_paren_depth == 0:
-                        cond_val = semantic_stack[-2]
-                        jump_idx = tac.emit("IF_FALSE", cond_val, "-", "PENDING")
-                        control_stack.append(jump_idx)
-                        in_condition = False
-
-                if lookahead == "ELSE":
-                    goto_idx = tac.emit("GOTO", "-", "-", "PENDING")
-                    else_label = tac.new_label()
-                    tac.emit("LABEL", "-", "-", else_label)
-                    if control_stack and isinstance(control_stack[-1], int):
-                        if_false_idx = control_stack.pop()
-                        tac.backpatch(if_false_idx, else_label)
-                    control_stack.append(goto_idx)
+                self._handle_control_flow_shift(lookahead, semantic_stack, control_stack, tac)
 
                 if lookahead == "LBRACE":
                     self.symbol_table.enter_scope()
@@ -215,200 +188,40 @@ class SLRParser:
                 for _ in range(pop_count):
                     rhs_vals.insert(0, semantic_stack.pop())
 
-                res = None
+                dispatch = {
+                    "Decl": lambda: self._reduce_decl(rhs_vals, line, tac),
+                    "DeclTail": lambda: self._reduce_decl_tail(pop_count, rhs_vals),
+                    "Factor": lambda: self._reduce_factor(rule_rhs, rhs_vals, line),
+                    "Type": lambda: self._reduce_type_or_relop(rhs_vals),
+                    "RelOp": lambda: self._reduce_type_or_relop(rhs_vals),
+                    "BoolFactor": lambda: self._reduce_bool_factor(rhs_vals, tac),
+                    "RelExpr": lambda: self._reduce_rel_expr(rhs_vals, tac),
+                    "Expr'": lambda: self._reduce_expr_prime_or_term_prime(
+                        pop_count, rhs_vals, tac
+                    ),
+                    "Term'": lambda: self._reduce_expr_prime_or_term_prime(
+                        pop_count, rhs_vals, tac
+                    ),
+                    "Expr": lambda: self._reduce_expr_or_term(rhs_vals, tac),
+                    "Term": lambda: self._reduce_expr_or_term(rhs_vals, tac),
+                    "BoolExpr'": lambda: self._reduce_bool_expr_prime_or_bool_term_prime(
+                        pop_count, rhs_vals, tac
+                    ),
+                    "BoolTerm'": lambda: self._reduce_bool_expr_prime_or_bool_term_prime(
+                        pop_count, rhs_vals, tac
+                    ),
+                    "BoolExpr": lambda: self._reduce_bool_expr_or_bool_term(rhs_vals, tac),
+                    "BoolTerm": lambda: self._reduce_bool_expr_or_bool_term(rhs_vals, tac),
+                    "PrintStmt": lambda: self._reduce_print_stmt(rhs_vals, tac),
+                    "AssignStmt": lambda: self._reduce_assign_stmt(rhs_vals, line, tac),
+                    "WhileStmt": lambda: self._reduce_while_stmt(control_stack, tac),
+                    "IfStmt": lambda: self._reduce_if_stmt(control_stack, tac),
+                }
 
-                if rule_lhs == "Decl":
-                    var_type = rhs_vals[0]
-                    var_name = rhs_vals[1]
-                    init_val = rhs_vals[2]
-
-                    ok = self.symbol_table.insert(var_name, var_type)
-                    if not ok:
-                        self.semantic_errors.append(
-                            f"[Error] Multiple Declaration: Variable '{var_name}' "
-                            f"at line {line} is already declared in this scope."
-                        )
-
-                    if init_val is not _NO_OP and init_val is not None:
-                        sym = self.symbol_table.lookup(var_name)
-                        if sym and sym.data_type == "int":
-                            try:
-                                if "." in str(init_val):
-                                    self.semantic_errors.append(
-                                        f"[Error] Type Mismatch at line {line}: "
-                                        f"cannot initialise int variable '{var_name}' "
-                                        f"with float value '{init_val}'."
-                                    )
-                            except TypeError:
-                                pass
-                        tac.emit("=", init_val, "-", var_name)
-
-                elif rule_lhs == "DeclTail":
-                    if pop_count == 1:
-                        res = _NO_OP
-                    else:
-                        res = rhs_vals[1]
-
-                elif rule_lhs in ("Factor", "Type", "RelOp") and len(rhs_vals) == 1:
-                    res = rhs_vals[0]
-                    if rule_lhs == "Factor" and rule_rhs == ["ID"]:
-                        sym = self.symbol_table.lookup(res)
-                        if not sym:
-                            self.semantic_errors.append(
-                                f"[Error] Undeclared Variable: '{res}' used at "
-                                f"line {line} without prior declaration."
-                            )
-
-                elif rule_lhs == "Factor" and len(rhs_vals) == 3:
-                    res = rhs_vals[1]
-
-                elif rule_lhs == "BoolFactor" and len(rhs_vals) == 3:
-                    res = rhs_vals[1]
-
-                elif rule_lhs == "BoolFactor" and len(rhs_vals) == 2 and rhs_vals[0] == "!":
-                    res = tac.new_temp()
-                    tac.emit("NOT", rhs_vals[1], "-", res)
-
-                elif rule_lhs == "BoolFactor" and len(rhs_vals) == 1:
-                    res = rhs_vals[0] if rhs_vals[0] is not _NO_OP else None
-
-                elif rule_lhs == "RelExpr" and len(rhs_vals) == 3:
-                    res = tac.new_temp()
-                    tac.emit(rhs_vals[1], rhs_vals[0], rhs_vals[2], res)
-
-                elif rule_lhs == "Expr'" and pop_count == 3:
-                    op, term, inner_tail = rhs_vals
-                    if inner_tail is _NO_OP:
-                        res = (op, term)
-                    else:
-                        inner_op, inner_right = inner_tail
-                        chained = tac.new_temp()
-                        tac.emit(inner_op, term, inner_right, chained)
-                        res = (op, chained)
-
-                elif rule_lhs == "Expr'" and pop_count == 0:
-                    res = _NO_OP
-
-                elif rule_lhs == "Term'" and pop_count == 3:
-                    op, factor, inner_tail = rhs_vals
-                    if inner_tail is _NO_OP:
-                        res = (op, factor)
-                    else:
-                        inner_op, inner_right = inner_tail
-                        chained = tac.new_temp()
-                        tac.emit(inner_op, factor, inner_right, chained)
-                        res = (op, chained)
-
-                elif rule_lhs == "Term'" and pop_count == 0:
-                    res = _NO_OP
-
-                elif rule_lhs == "Expr" and len(rhs_vals) == 2:
-                    left, tail = rhs_vals
-                    if tail is _NO_OP:
-                        res = left
-                    else:
-                        op, right = tail
-                        res = tac.new_temp()
-                        tac.emit(op, left, right, res)
-
-                elif rule_lhs == "Term" and len(rhs_vals) == 2:
-                    left, tail = rhs_vals
-                    if tail is _NO_OP:
-                        res = left
-                    else:
-                        op, right = tail
-                        res = tac.new_temp()
-                        tac.emit(op, left, right, res)
-
-                elif rule_lhs == "BoolExpr'" and pop_count == 3:
-                    op, right, inner_tail = rhs_vals
-                    if inner_tail is _NO_OP:
-                        res = (op, right)
-                    else:
-                        inner_op, inner_right = inner_tail
-                        chained = tac.new_temp()
-                        tac.emit(inner_op, right, inner_right, chained)
-                        res = (op, chained)
-
-                elif rule_lhs == "BoolExpr'" and pop_count == 0:
-                    res = _NO_OP
-
-                elif rule_lhs == "BoolTerm'" and pop_count == 3:
-                    op, right, inner_tail = rhs_vals
-                    if inner_tail is _NO_OP:
-                        res = (op, right)
-                    else:
-                        inner_op, inner_right = inner_tail
-                        chained = tac.new_temp()
-                        tac.emit(inner_op, right, inner_right, chained)
-                        res = (op, chained)
-
-                elif rule_lhs == "BoolTerm'" and pop_count == 0:
-                    res = _NO_OP
-
-                elif rule_lhs == "BoolExpr" and len(rhs_vals) == 2:
-                    left, tail = rhs_vals
-                    if tail is _NO_OP:
-                        res = left
-                    else:
-                        op, right = tail
-                        res = tac.new_temp()
-                        tac.emit(op, left, right, res)
-
-                elif rule_lhs == "BoolTerm" and len(rhs_vals) == 2:
-                    left, tail = rhs_vals
-                    if tail is _NO_OP:
-                        res = left
-                    else:
-                        op, right = tail
-                        res = tac.new_temp()
-                        tac.emit(op, left, right, res)
-
-                elif rule_lhs == "PrintStmt":
-                    tac.emit("PRINT", rhs_vals[2], "-", "-")
-
-                elif rule_lhs == "AssignStmt":
-                    var_name = rhs_vals[0]
-                    expr_val = rhs_vals[2]
-                    tac.emit("=", expr_val, "-", var_name)
-
-                    sym = self.symbol_table.lookup(var_name)
-                    if not sym:
-                        self.semantic_errors.append(
-                            f"[Error] Undeclared Variable: '{var_name}' used at "
-                            f"line {line} without prior declaration."
-                        )
-                    else:
-                        try:
-                            if sym.data_type == "int" and "." in str(expr_val):
-                                self.semantic_errors.append(
-                                    f"[Error] Type Mismatch at line {line}: "
-                                    f"cannot assign float value '{expr_val}' to "
-                                    f"int variable '{var_name}'."
-                                )
-                        except TypeError:
-                            pass
-
-                elif rule_lhs == "WhileStmt":
-                    if_false_idx = None
-                    start_label = None
-                    for i in range(len(control_stack) - 1, -1, -1):
-                        if isinstance(control_stack[i], int) and if_false_idx is None:
-                            if_false_idx = control_stack.pop(i)
-                        elif isinstance(control_stack[i], str) and start_label is None:
-                            start_label = control_stack.pop(i)
-                        if if_false_idx is not None and start_label is not None:
-                            break
-                    tac.emit("GOTO", "-", "-", start_label)
-                    exit_label = tac.new_label()
-                    tac.emit("LABEL", "-", "-", exit_label)
-                    tac.backpatch(if_false_idx, exit_label)
-
-                elif rule_lhs == "IfStmt":
-                    exit_label = tac.new_label()
-                    tac.emit("LABEL", "-", "-", exit_label)
-                    if control_stack and isinstance(control_stack[-1], int):
-                        tac.backpatch(control_stack.pop(), exit_label)
+                if rule_lhs in dispatch:
+                    res = dispatch[rule_lhs]()
+                else:
+                    res = None
 
                 if res is _NO_OP:
                     semantic_stack.append(_NO_OP)
@@ -524,3 +337,182 @@ class SLRParser:
         for err in self.semantic_errors:
             print(f"  {err}")
         print("═" * width + "\n")
+
+    def _handle_control_flow_shift(
+        self, lookahead: str, semantic_stack: list, control_stack: list, tac: TACManager
+    ) -> None:
+        """Handle control flow operations for WHILE, IF, and ELSE during shift actions."""
+        if lookahead == "WHILE":
+            start_label = tac.new_label()
+            tac.emit("LABEL", "-", "-", start_label)
+            control_stack.append(start_label)
+            self.in_condition = True
+            self.cond_paren_depth = 0
+        elif lookahead == "IF":
+            self.in_condition = True
+            self.cond_paren_depth = 0
+        elif lookahead == "LPAREN" and self.in_condition:
+            self.cond_paren_depth += 1
+        elif lookahead == "RPAREN" and self.in_condition:
+            self.cond_paren_depth -= 1
+            if self.cond_paren_depth == 0:
+                cond_val = semantic_stack[-2]
+                jump_idx = tac.emit("IF_FALSE", cond_val, "-", "PENDING")
+                control_stack.append(jump_idx)
+                self.in_condition = False
+        elif lookahead == "ELSE":
+            goto_idx = tac.emit("GOTO", "-", "-", "PENDING")
+            else_label = tac.new_label()
+            tac.emit("LABEL", "-", "-", else_label)
+            if control_stack and isinstance(control_stack[-1], int):
+                if_false_idx = control_stack.pop()
+                tac.backpatch(if_false_idx, else_label)
+            control_stack.append(goto_idx)
+
+    def _reduce_decl(self, rhs_vals: list, line: int, tac: TACManager) -> None:
+        var_type = rhs_vals[0]
+        var_name = rhs_vals[1]
+        init_val = rhs_vals[2]
+        ok = self.symbol_table.insert(var_name, var_type)
+        if not ok:
+            self.semantic_errors.append(
+                f"[Error] Multiple Declaration: Variable '{var_name}' "
+                f"at line {line} is already declared in this scope."
+            )
+        if init_val is not _NO_OP and init_val is not None:
+            sym = self.symbol_table.lookup(var_name)
+            if sym and sym.data_type == "int":
+                try:
+                    if "." in str(init_val):
+                        self.semantic_errors.append(
+                            f"[Error] Type Mismatch at line {line}: "
+                            f"cannot initialise int variable '{var_name}' "
+                            f"with float value '{init_val}'."
+                        )
+                except TypeError:
+                    pass
+            tac.emit("=", init_val, "-", var_name)
+
+    def _reduce_decl_tail(self, pop_count: int, rhs_vals: list) -> any:
+        if pop_count == 1:
+            return _NO_OP
+        return rhs_vals[1]
+
+    def _reduce_factor(self, rule_rhs: list[str], rhs_vals: list, line: int) -> any:
+        if len(rhs_vals) == 3:
+            return rhs_vals[1]
+        res = rhs_vals[0]
+        if rule_rhs == ["ID"]:
+            sym = self.symbol_table.lookup(res)
+            if not sym:
+                self.semantic_errors.append(
+                    f"[Error] Undeclared Variable: '{res}' used at "
+                    f"line {line} without prior declaration."
+                )
+        return res
+
+    def _reduce_type_or_relop(self, rhs_vals: list) -> any:
+        return rhs_vals[0]
+
+    def _reduce_bool_factor(self, rhs_vals: list, tac: TACManager) -> any:
+        if len(rhs_vals) == 3:
+            return rhs_vals[1]
+        if len(rhs_vals) == 2 and rhs_vals[0] == "!":
+            res = tac.new_temp()
+            tac.emit("NOT", rhs_vals[1], "-", res)
+            return res
+        return rhs_vals[0] if rhs_vals[0] is not _NO_OP else None
+
+    def _reduce_rel_expr(self, rhs_vals: list, tac: TACManager) -> str:
+        res = tac.new_temp()
+        tac.emit(rhs_vals[1], rhs_vals[0], rhs_vals[2], res)
+        return res
+
+    def _reduce_expr_prime_or_term_prime(
+        self, pop_count: int, rhs_vals: list, tac: TACManager
+    ) -> any:
+        if pop_count == 0:
+            return _NO_OP
+        op, val, inner_tail = rhs_vals
+        if inner_tail is _NO_OP:
+            return (op, val)
+        inner_op, inner_right = inner_tail
+        chained = tac.new_temp()
+        tac.emit(inner_op, val, inner_right, chained)
+        return (op, chained)
+
+    def _reduce_expr_or_term(self, rhs_vals: list, tac: TACManager) -> any:
+        left, tail = rhs_vals
+        if tail is _NO_OP:
+            return left
+        op, right = tail
+        res = tac.new_temp()
+        tac.emit(op, left, right, res)
+        return res
+
+    def _reduce_bool_expr_prime_or_bool_term_prime(
+        self, pop_count: int, rhs_vals: list, tac: TACManager
+    ) -> any:
+        if pop_count == 0:
+            return _NO_OP
+        op, right, inner_tail = rhs_vals
+        if inner_tail is _NO_OP:
+            return (op, right)
+        inner_op, inner_right = inner_tail
+        chained = tac.new_temp()
+        tac.emit(inner_op, right, inner_right, chained)
+        return (op, chained)
+
+    def _reduce_bool_expr_or_bool_term(self, rhs_vals: list, tac: TACManager) -> any:
+        left, tail = rhs_vals
+        if tail is _NO_OP:
+            return left
+        op, right = tail
+        res = tac.new_temp()
+        tac.emit(op, left, right, res)
+        return res
+
+    def _reduce_print_stmt(self, rhs_vals: list, tac: TACManager) -> None:
+        tac.emit("PRINT", rhs_vals[2], "-", "-")
+
+    def _reduce_assign_stmt(self, rhs_vals: list, line: int, tac: TACManager) -> None:
+        var_name = rhs_vals[0]
+        expr_val = rhs_vals[2]
+        tac.emit("=", expr_val, "-", var_name)
+        sym = self.symbol_table.lookup(var_name)
+        if not sym:
+            self.semantic_errors.append(
+                f"[Error] Undeclared Variable: '{var_name}' used at "
+                f"line {line} without prior declaration."
+            )
+        else:
+            try:
+                if sym.data_type == "int" and "." in str(expr_val):
+                    self.semantic_errors.append(
+                        f"[Error] Type Mismatch at line {line}: "
+                        f"cannot assign float value '{expr_val}' to "
+                        f"int variable '{var_name}'."
+                    )
+            except TypeError:
+                pass
+
+    def _reduce_while_stmt(self, control_stack: list, tac: TACManager) -> None:
+        if_false_idx = None
+        start_label = None
+        for i in range(len(control_stack) - 1, -1, -1):
+            if isinstance(control_stack[i], int) and if_false_idx is None:
+                if_false_idx = control_stack.pop(i)
+            elif isinstance(control_stack[i], str) and start_label is None:
+                start_label = control_stack.pop(i)
+            if if_false_idx is not None and start_label is not None:
+                break
+        tac.emit("GOTO", "-", "-", start_label)
+        exit_label = tac.new_label()
+        tac.emit("LABEL", "-", "-", exit_label)
+        tac.backpatch(if_false_idx, exit_label)
+
+    def _reduce_if_stmt(self, control_stack: list, tac: TACManager) -> None:
+        exit_label = tac.new_label()
+        tac.emit("LABEL", "-", "-", exit_label)
+        if control_stack and isinstance(control_stack[-1], int):
+            tac.backpatch(control_stack.pop(), exit_label)

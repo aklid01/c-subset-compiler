@@ -178,34 +178,51 @@ def optimize(quads: list[list[str]]) -> tuple[list[list[str]], str]:
     lines.append(f"  Original quad count : {len(quads)}")
     lines.append("─" * width)
 
-    lines.append("\n  Pass 1 – Constant Folding")
-    lines.append("  " + "─" * (width - 2))
-    q1, log1 = constant_folding(quads)
-    lines += log1 if log1 else ["  (nothing to fold)"]
+    current_quads = copy.deepcopy(quads)
+    pass_index = 1
+    while True:
+        next_quads, fold_log = constant_folding(current_quads)
+        next_quads, prop_log = constant_propagation(next_quads)
 
-    lines.append("\n  Pass 2 – Constant Propagation")
-    lines.append("  " + "─" * (width - 2))
-    q2, log2 = constant_propagation(q1)
-    lines += log2 if log2 else ["  (nothing to propagate)"]
+        if next_quads == current_quads:
+            break
 
-    lines.append("\n  Pass 1 (repeat) – Constant Folding on propagated values")
-    lines.append("  " + "─" * (width - 2))
-    q3, log3 = constant_folding(q2)
-    lines += log3 if log3 else ["  (nothing new to fold)"]
+        if pass_index == 1:
+            lines.append("\n  Pass 1 – Constant Folding")
+            lines.append("  " + "─" * (width - 2))
+            lines += fold_log if fold_log else ["  (nothing to fold)"]
 
-    lines.append("\n  Pass 2 (repeat) – Constant Propagation")
-    lines.append("  " + "─" * (width - 2))
-    q4, log4 = constant_propagation(q3)
-    lines += log4 if log4 else ["  (nothing new to propagate)"]
+            lines.append("\n  Pass 2 – Constant Propagation")
+            lines.append("  " + "─" * (width - 2))
+            lines += prop_log if prop_log else ["  (nothing to propagate)"]
+        elif pass_index == 2:
+            lines.append("\n  Pass 1 (repeat) – Constant Folding on propagated values")
+            lines.append("  " + "─" * (width - 2))
+            lines += fold_log if fold_log else ["  (nothing new to fold)"]
+
+            lines.append("\n  Pass 2 (repeat) – Constant Propagation")
+            lines.append("  " + "─" * (width - 2))
+            lines += prop_log if prop_log else ["  (nothing new to propagate)"]
+        else:
+            lines.append(f"\n  Pass {2 * pass_index - 1} – Constant Folding")
+            lines.append("  " + "─" * (width - 2))
+            lines += fold_log if fold_log else ["  (nothing new to fold)"]
+
+            lines.append(f"\n  Pass {2 * pass_index} – Constant Propagation")
+            lines.append("  " + "─" * (width - 2))
+            lines += prop_log if prop_log else ["  (nothing new to propagate)"]
+
+        current_quads = next_quads
+        pass_index += 1
 
     lines.append("\n  Pass 3 – Dead Code Elimination")
     lines.append("  " + "─" * (width - 2))
-    q5, log5 = dead_code_elimination(q4)
-    lines += log5 if log5 else ["  (no dead code found)"]
+    final_quads, dce_log = dead_code_elimination(current_quads)
+    lines += dce_log if dce_log else ["  (no dead code found)"]
 
-    removed = len(quads) - len(q5)
+    removed = len(quads) - len(final_quads)
     lines.append("\n" + "─" * width)
-    lines.append(f"  Optimized quad count : {len(q5)}  (removed {removed})")
+    lines.append(f"  Optimized quad count : {len(final_quads)}  (removed {removed})")
     lines.append("═" * width + "\n")
 
-    return q5, "\n".join(lines)
+    return final_quads, "\n".join(lines)
