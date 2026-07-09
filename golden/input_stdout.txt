@@ -1,0 +1,501 @@
+
+--- FIRST SETS ---
+Program        : {'PRINT', 'FLOAT', 'ε', 'IF', 'INT', 'WHILE', 'LBRACE', 'ID'}
+StmtList       : {'PRINT', 'ε', 'INT', 'IF', 'FLOAT', 'WHILE', 'LBRACE', 'ID'}
+Stmt           : {'PRINT', 'INT', 'IF', 'FLOAT', 'WHILE', 'LBRACE', 'ID'}
+Decl           : {'INT', 'FLOAT'}
+DeclTail       : {'ASSIGN', 'SEMI'}
+Type           : {'INT', 'FLOAT'}
+Block          : {'LBRACE'}
+AssignStmt     : {'ID'}
+PrintStmt      : {'PRINT'}
+IfStmt         : {'IF'}
+ElsePart       : {'ε', 'ELSE'}
+WhileStmt      : {'WHILE'}
+Expr           : {'FLOAT', 'INT', 'LPAREN', 'ID'}
+Expr'          : {'MINUS', 'PLUS', 'ε'}
+Term           : {'FLOAT', 'INT', 'LPAREN', 'ID'}
+Term'          : {'MOD', 'DIV', 'ε', 'MULT'}
+Factor         : {'INT', 'LPAREN', 'FLOAT', 'ID'}
+BoolExpr       : {'INT', 'NOT', 'FLOAT', 'LPAREN', 'ID'}
+BoolExpr'      : {'OR', 'ε'}
+BoolTerm       : {'INT', 'NOT', 'FLOAT', 'LPAREN', 'ID'}
+BoolTerm'      : {'AND', 'ε'}
+BoolFactor     : {'INT', 'NOT', 'FLOAT', 'LPAREN', 'ID'}
+RelExpr        : {'FLOAT', 'INT', 'LPAREN', 'ID'}
+RelOp          : {'GE', 'LT', 'NE', 'GT', 'EQ', 'LE'}
+
+--- FOLLOW SETS ---
+Program        : {'$'}
+StmtList       : {'$', 'RBRACE', 'ELSE'}
+Stmt           : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+Decl           : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+DeclTail       : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+Type           : {'ID'}
+Block          : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+AssignStmt     : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+PrintStmt      : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+IfStmt         : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+ElsePart       : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+WhileStmt      : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+Expr           : {'SEMI', 'GE', 'LT', 'NE', 'RPAREN', 'OR', 'AND', 'GT', 'EQ', 'LE'}
+Expr'          : {'SEMI', 'LT', 'OR', 'AND', 'GT', 'EQ', 'LE', 'GE', 'NE', 'RPAREN'}
+Term           : {'SEMI', 'LT', 'OR', 'AND', 'GT', 'EQ', 'PLUS', 'LE', 'MINUS', 'GE', 'NE', 'RPAREN'}
+Term'          : {'SEMI', 'LT', 'OR', 'AND', 'GT', 'EQ', 'PLUS', 'LE', 'MINUS', 'GE', 'NE', 'RPAREN'}
+Factor         : {'SEMI', 'LT', 'DIV', 'OR', 'MOD', 'AND', 'GT', 'EQ', 'PLUS', 'LE', 'MULT', 'MINUS', 'GE', 'NE', 'RPAREN'}
+BoolExpr       : {'RPAREN'}
+BoolExpr'      : {'RPAREN'}
+BoolTerm       : {'OR', 'RPAREN'}
+BoolTerm'      : {'OR', 'RPAREN'}
+BoolFactor     : {'OR', 'AND', 'RPAREN'}
+RelExpr        : {'OR', 'AND', 'RPAREN'}
+RelOp          : {'INT', 'FLOAT', 'LPAREN', 'ID'}
+
+
+
+--- LL(1) PARSE PREVIEW ---
+STEP | STACK (Top on Right)                                         | LOOKAHEAD | ACTION
+----------------------------------------------------------------------------------------
+1    | ['$', 'Program']                                             | INT       | Apply Program -> StmtList
+2    | ['$', 'StmtList']                                            | INT       | Apply StmtList -> Stmt StmtList
+3    | ['$', 'StmtList', 'Stmt']                                    | INT       | Apply Stmt -> Decl
+4    | ['$', 'StmtList', 'Decl']                                    | INT       | Apply Decl -> Type ID DeclTail
+5    | ['$', 'StmtList', 'DeclTail', 'ID', 'Type']                  | INT       | Apply Type -> INT
+6    | ['$', 'StmtList', 'DeclTail', 'ID', 'INT']                   | INT       | Match INT
+7    | ['$', 'StmtList', 'DeclTail', 'ID']                          | ID        | Match ID
+8    | ['$', 'StmtList', 'DeclTail']                                | SEMI      | Apply DeclTail -> SEMI
+9    | ['$', 'StmtList', 'SEMI']                                    | SEMI      | Match SEMI
+10   | ['$', 'StmtList']                                            | INT       | Apply StmtList -> Stmt StmtList
+11   | ['$', 'StmtList', 'Stmt']                                    | INT       | Apply Stmt -> Decl
+12   | ['$', 'StmtList', 'Decl']                                    | INT       | Apply Decl -> Type ID DeclTail
+13   | ['$', 'StmtList', 'DeclTail', 'ID', 'Type']                  | INT       | Apply Type -> INT
+14   | ['$', 'StmtList', 'DeclTail', 'ID', 'INT']                   | INT       | Match INT
+15   | ['$', 'StmtList', 'DeclTail', 'ID']                          | ID        | Match ID
+16   | ['$', 'StmtList', 'DeclTail']                                | SEMI      | Apply DeclTail -> SEMI
+17   | ['$', 'StmtList', 'SEMI']                                    | SEMI      | Match SEMI
+18   | ['$', 'StmtList']                                            | INT       | Apply StmtList -> Stmt StmtList
+19   | ['$', 'StmtList', 'Stmt']                                    | INT       | Apply Stmt -> Decl
+20   | ['$', 'StmtList', 'Decl']                                    | INT       | Apply Decl -> Type ID DeclTail
+21   | ['$', 'StmtList', 'DeclTail', 'ID', 'Type']                  | INT       | Apply Type -> INT
+22   | ['$', 'StmtList', 'DeclTail', 'ID', 'INT']                   | INT       | Match INT
+23   | ['$', 'StmtList', 'DeclTail', 'ID']                          | ID        | Match ID
+24   | ['$', 'StmtList', 'DeclTail']                                | SEMI      | Apply DeclTail -> SEMI
+25   | ['$', 'StmtList', 'SEMI']                                    | SEMI      | Match SEMI
+26   | ['$', 'StmtList']                                            | FLOAT     | Apply StmtList -> Stmt StmtList
+27   | ['$', 'StmtList', 'Stmt']                                    | FLOAT     | Apply Stmt -> Decl
+28   | ['$', 'StmtList', 'Decl']                                    | FLOAT     | Apply Decl -> Type ID DeclTail
+29   | ['$', 'StmtList', 'DeclTail', 'ID', 'Type']                  | FLOAT     | Apply Type -> FLOAT
+30   | ['$', 'StmtList', 'DeclTail', 'ID', 'FLOAT']                 | FLOAT     | Match FLOAT
+31   | ['$', 'StmtList', 'DeclTail', 'ID']                          | ID        | Match ID
+32   | ['$', 'StmtList', 'DeclTail']                                | SEMI      | Apply DeclTail -> SEMI
+33   | ['$', 'StmtList', 'SEMI']                                    | SEMI      | Match SEMI
+34   | ['$', 'StmtList']                                            | ID        | Apply StmtList -> Stmt StmtList
+35   | ['$', 'StmtList', 'Stmt']                                    | ID        | Apply Stmt -> AssignStmt
+36   | ['$', 'StmtList', 'AssignStmt']                              | ID        | Apply AssignStmt -> ID ASSIGN Expr SEMI
+37   | ['$', 'StmtList', 'SEMI', 'Expr', 'ASSIGN', 'ID']            | ID        | Match ID
+38   | ['$', 'StmtList', 'SEMI', 'Expr', 'ASSIGN']                  | ASSIGN    | Match ASSIGN
+39   | ['$', 'StmtList', 'SEMI', 'Expr']                            | INT       | Apply Expr -> Term Expr'
+40   | ['$', 'StmtList', 'SEMI', "Expr'", 'Term']                   | INT       | Apply Term -> Factor Term'
+41   | ['$', 'StmtList', 'SEMI', "Expr'", "Term'", 'Factor']        | INT       | Apply Factor -> INT
+42   | ['$', 'StmtList', 'SEMI', "Expr'", "Term'", 'INT']           | INT       | Match INT
+43   | ['$', 'StmtList', 'SEMI', "Expr'", "Term'"]                  | MULT      | Apply Term' -> MULT Factor Term'
+44   | ..., 'StmtList', 'SEMI', "Expr'", "Term'", 'Factor', 'MULT'] | MULT      | Match MULT
+45   | ['$', 'StmtList', 'SEMI', "Expr'", "Term'", 'Factor']        | LPAREN    | Apply Factor -> LPAREN Expr RPAREN
+46   | ...t', 'SEMI', "Expr'", "Term'", 'RPAREN', 'Expr', 'LPAREN'] | LPAREN    | Match LPAREN
+47   | ..., 'StmtList', 'SEMI', "Expr'", "Term'", 'RPAREN', 'Expr'] | INT       | Apply Expr -> Term Expr'
+48   | ...st', 'SEMI', "Expr'", "Term'", 'RPAREN', "Expr'", 'Term'] | INT       | Apply Term -> Factor Term'
+49   | ..., "Expr'", "Term'", 'RPAREN', "Expr'", "Term'", 'Factor'] | INT       | Apply Factor -> INT
+50   | ...MI', "Expr'", "Term'", 'RPAREN', "Expr'", "Term'", 'INT'] | INT       | Match INT
+51   | ...t', 'SEMI', "Expr'", "Term'", 'RPAREN', "Expr'", "Term'"] | PLUS      | Apply Term' -> ε
+52   | ... 'StmtList', 'SEMI', "Expr'", "Term'", 'RPAREN', "Expr'"] | PLUS      | Apply Expr' -> PLUS Term Expr'
+53   | ...MI', "Expr'", "Term'", 'RPAREN', "Expr'", 'Term', 'PLUS'] | PLUS      | Match PLUS
+54   | ...st', 'SEMI', "Expr'", "Term'", 'RPAREN', "Expr'", 'Term'] | INT       | Apply Term -> Factor Term'
+55   | ..., "Expr'", "Term'", 'RPAREN', "Expr'", "Term'", 'Factor'] | INT       | Apply Factor -> INT
+56   | ...MI', "Expr'", "Term'", 'RPAREN', "Expr'", "Term'", 'INT'] | INT       | Match INT
+57   | ...t', 'SEMI', "Expr'", "Term'", 'RPAREN', "Expr'", "Term'"] | RPAREN    | Apply Term' -> ε
+58   | ... 'StmtList', 'SEMI', "Expr'", "Term'", 'RPAREN', "Expr'"] | RPAREN    | Apply Expr' -> ε
+59   | ['$', 'StmtList', 'SEMI', "Expr'", "Term'", 'RPAREN']        | RPAREN    | Match RPAREN
+60   | ['$', 'StmtList', 'SEMI', "Expr'", "Term'"]                  | SEMI      | Apply Term' -> ε
+61   | ['$', 'StmtList', 'SEMI', "Expr'"]                           | SEMI      | Apply Expr' -> ε
+62   | ['$', 'StmtList', 'SEMI']                                    | SEMI      | Match SEMI
+63   | ['$', 'StmtList']                                            | ID        | Apply StmtList -> Stmt StmtList
+64   | ['$', 'StmtList', 'Stmt']                                    | ID        | Apply Stmt -> AssignStmt
+65   | ['$', 'StmtList', 'AssignStmt']                              | ID        | Apply AssignStmt -> ID ASSIGN Expr SEMI
+66   | ['$', 'StmtList', 'SEMI', 'Expr', 'ASSIGN', 'ID']            | ID        | Match ID
+67   | ['$', 'StmtList', 'SEMI', 'Expr', 'ASSIGN']                  | ASSIGN    | Match ASSIGN
+68   | ['$', 'StmtList', 'SEMI', 'Expr']                            | INT       | Apply Expr -> Term Expr'
+69   | ['$', 'StmtList', 'SEMI', "Expr'", 'Term']                   | INT       | Apply Term -> Factor Term'
+70   | ['$', 'StmtList', 'SEMI', "Expr'", "Term'", 'Factor']        | INT       | Apply Factor -> INT
+71   | ['$', 'StmtList', 'SEMI', "Expr'", "Term'", 'INT']           | INT       | Match INT
+72   | ['$', 'StmtList', 'SEMI', "Expr'", "Term'"]                  | SEMI      | Apply Term' -> ε
+73   | ['$', 'StmtList', 'SEMI', "Expr'"]                           | SEMI      | Apply Expr' -> ε
+74   | ['$', 'StmtList', 'SEMI']                                    | SEMI      | Match SEMI
+75   | ['$', 'StmtList']                                            | ID        | Apply StmtList -> Stmt StmtList
+... (Remaining 318 steps processed) ...
+
+[Success] Parsing completed successfully in 393 steps.
+[Success] Full trace saved to traces/ll1_trace.txt
+
+
+--- SLR(1) PARSE PREVIEW ---
+STEP | STACK (States)                           | LOOKAHEAD | ACTION
+--------------------------------------------------------------------
+1   | [0]                                      | INT    | s14
+2   | [0, 14]                                  | ID     | r13
+3   | [0, 13]                                  | ID     | s21
+4   | [0, 13, 21]                              | SEMI   | s42
+5   | [0, 13, 21, 42]                          | INT    | r12
+6   | [0, 13, 21, 41]                          | INT    | r10
+7   | [0, 3]                                   | INT    | r4
+8   | [0, 15]                                  | INT    | s14
+9   | [0, 15, 14]                              | ID     | r13
+10  | [0, 15, 13]                              | ID     | s21
+11  | [0, 15, 13, 21]                          | SEMI   | s42
+12  | [0, 15, 13, 21, 42]                      | INT    | r12
+13  | [0, 15, 13, 21, 41]                      | INT    | r10
+14  | [0, 15, 3]                               | INT    | r4
+15  | [0, 15, 15]                              | INT    | s14
+16  | [0, 15, 15, 14]                          | ID     | r13
+17  | [0, 15, 15, 13]                          | ID     | s21
+18  | [0, 15, 15, 13, 21]                      | SEMI   | s42
+19  | [0, 15, 15, 13, 21, 42]                  | FLOAT  | r12
+20  | [0, 15, 15, 13, 21, 41]                  | FLOAT  | r10
+21  | [0, 15, 15, 3]                           | FLOAT  | r4
+22  | [0, 15, 15, 15]                          | FLOAT  | s6
+23  | [0, 15, 15, 15, 6]                       | ID     | r14
+24  | [0, 15, 15, 15, 13]                      | ID     | s21
+25  | [0, 15, 15, 15, 13, 21]                  | SEMI   | s42
+26  | [0, 15, 15, 15, 13, 21, 42]              | ID     | r12
+27  | [0, 15, 15, 15, 13, 21, 41]              | ID     | r10
+28  | [0, 15, 15, 15, 3]                       | ID     | r4
+29  | [0, 15, 15, 15, 15]                      | ID     | s17
+30  | [0, 15, 15, 15, 15, 17]                  | ASSIGN | s24
+31  | [0, 15, 15, 15, 15, 17, 24]              | INT    | s29
+32  | [0, 15, 15, 15, 15, 17, 24, 29]          | MULT   | r33
+33  | [0, 15, 15, 15, 15, 17, 24, 28]          | MULT   | s52
+34  | [0, 15, 15, 15, 15, 17, 24, 28, 52]      | LPAREN | s30
+35  | [0, 15, 15, 15, 15, 17, 24, 28, 52, 30]  | INT    | s29
+36  | ..., 15, 15, 15, 17, 24, 28, 52, 30, 29] | PLUS   | r33
+37  | ..., 15, 15, 15, 17, 24, 28, 52, 30, 28] | PLUS   | r30
+38  | ..., 15, 15, 17, 24, 28, 52, 30, 28, 49] | PLUS   | r26
+39  | ..., 15, 15, 15, 17, 24, 28, 52, 30, 27] | PLUS   | s47
+40  | ..., 15, 15, 17, 24, 28, 52, 30, 27, 47] | INT    | s29
+41  | ..., 15, 17, 24, 28, 52, 30, 27, 47, 29] | RPAREN | r33
+42  | ..., 15, 17, 24, 28, 52, 30, 27, 47, 28] | RPAREN | r30
+43  | ..., 17, 24, 28, 52, 30, 27, 47, 28, 49] | RPAREN | r26
+44  | ..., 15, 17, 24, 28, 52, 30, 27, 47, 74] | RPAREN | r25
+45  | ..., 17, 24, 28, 52, 30, 27, 47, 74, 87] | RPAREN | r23
+46  | ..., 15, 15, 17, 24, 28, 52, 30, 27, 48] | RPAREN | r22
+47  | ..., 15, 15, 15, 17, 24, 28, 52, 30, 53] | RPAREN | s78
+48  | ..., 15, 15, 17, 24, 28, 52, 30, 53, 78] | SEMI   | r31
+49  | [0, 15, 15, 15, 15, 17, 24, 28, 52, 77]  | SEMI   | r30
+50  | ..., 15, 15, 15, 17, 24, 28, 52, 77, 90] | SEMI   | r27
+51  | [0, 15, 15, 15, 15, 17, 24, 28, 49]      | SEMI   | r26
+52  | [0, 15, 15, 15, 15, 17, 24, 27]          | SEMI   | r25
+53  | [0, 15, 15, 15, 15, 17, 24, 27, 48]      | SEMI   | r22
+54  | [0, 15, 15, 15, 15, 17, 24, 44]          | SEMI   | s71
+55  | [0, 15, 15, 15, 15, 17, 24, 44, 71]      | ID     | r16
+56  | [0, 15, 15, 15, 15, 7]                   | ID     | r5
+57  | [0, 15, 15, 15, 15, 15]                  | ID     | s17
+58  | [0, 15, 15, 15, 15, 15, 17]              | ASSIGN | s24
+59  | [0, 15, 15, 15, 15, 15, 17, 24]          | INT    | s29
+60  | [0, 15, 15, 15, 15, 15, 17, 24, 29]      | SEMI   | r33
+61  | [0, 15, 15, 15, 15, 15, 17, 24, 28]      | SEMI   | r30
+62  | [0, 15, 15, 15, 15, 15, 17, 24, 28, 49]  | SEMI   | r26
+63  | [0, 15, 15, 15, 15, 15, 17, 24, 27]      | SEMI   | r25
+64  | [0, 15, 15, 15, 15, 15, 17, 24, 27, 48]  | SEMI   | r22
+65  | [0, 15, 15, 15, 15, 15, 17, 24, 44]      | SEMI   | s71
+66  | [0, 15, 15, 15, 15, 15, 17, 24, 44, 71]  | ID     | r16
+67  | [0, 15, 15, 15, 15, 15, 7]               | ID     | r5
+68  | [0, 15, 15, 15, 15, 15, 15]              | ID     | s17
+69  | [0, 15, 15, 15, 15, 15, 15, 17]          | ASSIGN | s24
+70  | [0, 15, 15, 15, 15, 15, 15, 17, 24]      | INT    | s29
+71  | [0, 15, 15, 15, 15, 15, 15, 17, 24, 29]  | SEMI   | r33
+72  | [0, 15, 15, 15, 15, 15, 15, 17, 24, 28]  | SEMI   | r30
+73  | ..., 15, 15, 15, 15, 15, 17, 24, 28, 49] | SEMI   | r26
+74  | [0, 15, 15, 15, 15, 15, 15, 17, 24, 27]  | SEMI   | r25
+75  | ..., 15, 15, 15, 15, 15, 17, 24, 27, 48] | SEMI   | r22
+... (Remaining 318 steps processed) ...
+
+[Success] SLR Parsing completed successfully in 393 steps.
+[Success] Full SLR trace saved to traces/slr_trace.txt
+
+════════════════════════════════════════════════════════════
+═════════════════ LL1 SYMBOL TABLE REPORT ══════════════════
+════════════════════════════════════════════════════════════
+
+▣ STEP-BY-STEP UPDATES
+────────────────────────────────────────
+  • Allocating a (int) at offset 0
+  • Allocating b (int) at offset 4
+  • Allocating sum (int) at offset 8
+  • Allocating avg (float) at offset 12
+  ▸ --- Entering Scope Level 1 ---
+  • Allocating temp (int) at offset 20
+  ▸ --- Entering Scope Level 2 ---
+  ▸ --- Exiting to Scope Level 1 ---
+  ▸ --- Entering Scope Level 2 ---
+  ▸ --- Exiting to Scope Level 1 ---
+  • --- Exiting to Scope Level 0 ---
+  ▸ --- Entering Scope Level 1 ---
+  • --- Exiting to Scope Level 0 ---
+  ▸ --- Entering Scope Level 1 ---
+  • --- Exiting to Scope Level 0 ---
+
+▣ FINAL ATTRIBUTE SUMMARY
+────────────────────────────────────────────────────────────
+Variable     | Type       | Scope    | Offset  
+------------------------------------------------------------
+a            | int        | 0        | 0       
+b            | int        | 0        | 4       
+sum          | int        | 0        | 8       
+avg          | float      | 0        | 12      
+temp         | int        | 1        | 20      
+────────────────────────────────────────────────────────────
+Total Stack Memory Reserved: 24 bytes
+════════════════════════════════════════════════════════════
+
+[Success] LL1 symbol table generated.
+
+════════════════════════════════════════════════════════════
+═════════════════ SLR SYMBOL TABLE REPORT ══════════════════
+════════════════════════════════════════════════════════════
+
+▣ STEP-BY-STEP UPDATES
+────────────────────────────────────────
+  • Allocating a (int) at offset 0
+  • Allocating b (int) at offset 4
+  • Allocating sum (int) at offset 8
+  • Allocating avg (float) at offset 12
+  ▸ --- Entering Scope Level 1 ---
+  • Allocating temp (int) at offset 20
+  ▸ --- Entering Scope Level 2 ---
+  ▸ --- Exiting to Scope Level 1 ---
+  ▸ --- Entering Scope Level 2 ---
+  ▸ --- Exiting to Scope Level 1 ---
+  • --- Exiting to Scope Level 0 ---
+  ▸ --- Entering Scope Level 1 ---
+  • --- Exiting to Scope Level 0 ---
+  ▸ --- Entering Scope Level 1 ---
+  • --- Exiting to Scope Level 0 ---
+
+▣ FINAL ATTRIBUTE SUMMARY
+────────────────────────────────────────────────────────────
+Variable     | Type       | Scope    | Offset  
+------------------------------------------------------------
+a            | int        | 0        | 0       
+b            | int        | 0        | 4       
+sum          | int        | 0        | 8       
+avg          | float      | 0        | 12      
+temp         | int        | 1        | 20      
+────────────────────────────────────────────────────────────
+Total Stack Memory Reserved: 24 bytes
+════════════════════════════════════════════════════════════
+
+[Success] SLR symbol table generated.
+
+══════════════════════════════════════════════════════════════
+═════════════════════ SEMANTIC ANALYSIS ══════════════════════
+══════════════════════════════════════════════════════════════
+  [✓] LL(1): No semantic errors detected.
+  [✓] SLR(1): No semantic errors detected.
+══════════════════════════════════════════════════════════════
+
+
+════════════════════════════════════════════════════════════
+═════════════ THREE-ADDRESS CODE  (Quadruples) ═════════════
+════════════════════════════════════════════════════════════
+Index   | Op        | Arg1      | Arg2      | Result    
+─────────────────────────────────────────────────────────────
+0       | +         | 3         | 4         | t1        
+1       | *         | 2         | t1        | t2        
+2       | =         | t2        | -         | a         
+3       | =         | 15        | -         | b         
+4       | =         | 0         | -         | sum       
+5       | LABEL     | -         | -         | L1        
+6       | <         | a         | b         | t3        
+7       | !=        | b         | 0         | t4        
+8       | &&        | t3        | t4        | t5        
+9       | IF_FALSE  | t5        | -         | L4        
+10      | *         | a         | 2         | t6        
+11      | =         | t6        | -         | temp      
+12      | %         | temp      | 3         | t7        
+13      | ==        | t7        | 0         | t8        
+14      | >         | a         | 5         | t9        
+15      | ||        | t8        | t9        | t10       
+16      | IF_FALSE  | t10       | -         | L2        
+17      | +         | sum       | temp      | t11       
+18      | =         | t11       | -         | sum       
+19      | GOTO      | -         | -         | L3        
+20      | LABEL     | -         | -         | L2        
+21      | -         | sum       | 1         | t12       
+22      | =         | t12       | -         | sum       
+23      | LABEL     | -         | -         | L3        
+24      | +         | a         | 1         | t13       
+25      | =         | t13       | -         | a         
+26      | GOTO      | -         | -         | L1        
+27      | LABEL     | -         | -         | L4        
+28      | -         | b         | a         | t14       
+29      | /         | sum       | t14       | t15       
+30      | =         | t15       | -         | avg       
+31      | <         | avg       | 5.0       | t16       
+32      | NOT       | t16       | -         | t17       
+33      | IF_FALSE  | t17       | -         | L5        
+34      | PRINT     | sum       | -         | -         
+35      | GOTO      | -         | -         | L6        
+36      | LABEL     | -         | -         | L5        
+37      | PRINT     | avg       | -         | -         
+38      | LABEL     | -         | -         | L6        
+════════════════════════════════════════════════════════════
+  Total quads : 39
+  Temporaries : 17
+  Labels      : 6
+════════════════════════════════════════════════════════════
+
+[Success] TAC written to ./output/tac_output.txt
+
+══════════════════════════════════════════════════════════════
+════════════════════ OPTIMIZATION REPORT ═════════════════════
+══════════════════════════════════════════════════════════════
+  Original quad count : 39
+──────────────────────────────────────────────────────────────
+
+  Pass 1 – Constant Folding
+  ────────────────────────────────────────────────────────────
+  [  0] 3 + 4  →  7
+
+  Pass 2 – Constant Propagation
+  ────────────────────────────────────────────────────────────
+  [  1] replaced 't1' with '7' in arg2
+
+  Pass 1 (repeat) – Constant Folding on propagated values
+  ────────────────────────────────────────────────────────────
+  [  1] 2 * 7  →  14
+
+  Pass 2 (repeat) – Constant Propagation
+  ────────────────────────────────────────────────────────────
+  [  2] replaced 't2' with '14' in arg1
+
+  Pass 3 – Dead Code Elimination
+  ────────────────────────────────────────────────────────────
+  [  0] removed dead: 't1' = = 7 -
+  [  1] removed dead: 't2' = = 14 -
+
+──────────────────────────────────────────────────────────────
+  Optimized quad count : 37  (removed 2)
+══════════════════════════════════════════════════════════════
+
+
+════════════════════════════════════════════════════════════
+════════ OPTIMIZED THREE-ADDRESS CODE  (Quadruples) ════════
+════════════════════════════════════════════════════════════
+Index   | Op        | Arg1      | Arg2      | Result    
+─────────────────────────────────────────────────────────────
+0       | =         | 14        | -         | a         
+1       | =         | 15        | -         | b         
+2       | =         | 0         | -         | sum       
+3       | LABEL     | -         | -         | L1        
+4       | <         | a         | b         | t3        
+5       | !=        | b         | 0         | t4        
+6       | &&        | t3        | t4        | t5        
+7       | IF_FALSE  | t5        | -         | L4        
+8       | *         | a         | 2         | t6        
+9       | =         | t6        | -         | temp      
+10      | %         | temp      | 3         | t7        
+11      | ==        | t7        | 0         | t8        
+12      | >         | a         | 5         | t9        
+13      | ||        | t8        | t9        | t10       
+14      | IF_FALSE  | t10       | -         | L2        
+15      | +         | sum       | temp      | t11       
+16      | =         | t11       | -         | sum       
+17      | GOTO      | -         | -         | L3        
+18      | LABEL     | -         | -         | L2        
+19      | -         | sum       | 1         | t12       
+20      | =         | t12       | -         | sum       
+21      | LABEL     | -         | -         | L3        
+22      | +         | a         | 1         | t13       
+23      | =         | t13       | -         | a         
+24      | GOTO      | -         | -         | L1        
+25      | LABEL     | -         | -         | L4        
+26      | -         | b         | a         | t14       
+27      | /         | sum       | t14       | t15       
+28      | =         | t15       | -         | avg       
+29      | <         | avg       | 5.0       | t16       
+30      | NOT       | t16       | -         | t17       
+31      | IF_FALSE  | t17       | -         | L5        
+32      | PRINT     | sum       | -         | -         
+33      | GOTO      | -         | -         | L6        
+34      | LABEL     | -         | -         | L5        
+35      | PRINT     | avg       | -         | -         
+36      | LABEL     | -         | -         | L6        
+════════════════════════════════════════════════════════════
+  Total quads : 37
+════════════════════════════════════════════════════════════
+
+[Success] Optimized TAC written to ./output/optimized_tac_output.txt
+
+══════════════════════════════════════════════════════════════
+═══════════════ TARGET CODE  (Pseudo-Assembly) ═══════════════
+══════════════════════════════════════════════════════════════
+    LOAD   R0, 14
+    STORE  R0, a
+    LOAD   R1, 15
+    STORE  R1, b
+    LOAD   R2, 0
+    STORE  R2, sum
+L1:
+    SLT    R3, R0, R1
+    LOAD   R4, 0
+    SNE    R5, R1, R4
+    AND    R6, R3, R5
+    JZ     R6, L4
+    LOAD   R7, 2
+    MUL    R2, R0, R7
+    MOV    R1, R2
+    LOAD   R4, 3
+    MOD    R3, R1, R4
+    LOAD   R5, 0
+    SEQ    R6, R3, R5
+    LOAD   R7, 5
+    SGT    R2, R0, R7
+    STORE  R1, temp
+    OR     R1, R6, R2
+    JZ     R1, L2
+    LOAD   R4, sum
+    LOAD   R3, temp
+    ADD    R5, R4, R3
+    MOV    R4, R5
+    STORE  R4, sum
+    JMP    L3
+L2:
+    LOAD   R0, 1
+    SUB    R7, R4, R0
+    MOV    R4, R7
+    STORE  R4, sum
+L3:
+    LOAD   R6, a
+    LOAD   R2, 1
+    ADD    R1, R6, R2
+    MOV    R6, R1
+    STORE  R6, a
+    JMP    L1
+L4:
+    LOAD   R3, b
+    SUB    R5, R3, R6
+    DIV    R0, R4, R5
+    MOV    R7, R0
+    STORE  R7, avg
+    LOAD   R2, 5.0
+    SLT    R1, R7, R2
+    NOT    R3, R1
+    JZ     R3, L5
+    PRINT  R4
+    JMP    L6
+L5:
+    PRINT  R7
+L6:
+══════════════════════════════════════════════════════════════
+  Total instructions : 57
+══════════════════════════════════════════════════════════════
+
+[Success] Target code written to ./output/target_output.txt

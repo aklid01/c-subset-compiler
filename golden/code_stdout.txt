@@ -1,0 +1,316 @@
+
+--- FIRST SETS ---
+Program        : {'PRINT', 'FLOAT', 'ε', 'IF', 'INT', 'WHILE', 'LBRACE', 'ID'}
+StmtList       : {'PRINT', 'ε', 'INT', 'IF', 'FLOAT', 'WHILE', 'LBRACE', 'ID'}
+Stmt           : {'PRINT', 'INT', 'IF', 'FLOAT', 'WHILE', 'LBRACE', 'ID'}
+Decl           : {'INT', 'FLOAT'}
+DeclTail       : {'ASSIGN', 'SEMI'}
+Type           : {'INT', 'FLOAT'}
+Block          : {'LBRACE'}
+AssignStmt     : {'ID'}
+PrintStmt      : {'PRINT'}
+IfStmt         : {'IF'}
+ElsePart       : {'ε', 'ELSE'}
+WhileStmt      : {'WHILE'}
+Expr           : {'FLOAT', 'INT', 'LPAREN', 'ID'}
+Expr'          : {'MINUS', 'PLUS', 'ε'}
+Term           : {'FLOAT', 'INT', 'LPAREN', 'ID'}
+Term'          : {'MOD', 'DIV', 'ε', 'MULT'}
+Factor         : {'INT', 'LPAREN', 'FLOAT', 'ID'}
+BoolExpr       : {'INT', 'NOT', 'FLOAT', 'LPAREN', 'ID'}
+BoolExpr'      : {'OR', 'ε'}
+BoolTerm       : {'INT', 'NOT', 'FLOAT', 'LPAREN', 'ID'}
+BoolTerm'      : {'AND', 'ε'}
+BoolFactor     : {'INT', 'NOT', 'FLOAT', 'LPAREN', 'ID'}
+RelExpr        : {'FLOAT', 'INT', 'LPAREN', 'ID'}
+RelOp          : {'GE', 'LT', 'NE', 'GT', 'EQ', 'LE'}
+
+--- FOLLOW SETS ---
+Program        : {'$'}
+StmtList       : {'$', 'RBRACE', 'ELSE'}
+Stmt           : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+Decl           : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+DeclTail       : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+Type           : {'ID'}
+Block          : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+AssignStmt     : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+PrintStmt      : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+IfStmt         : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+ElsePart       : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+WhileStmt      : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+Expr           : {'SEMI', 'GE', 'LT', 'NE', 'RPAREN', 'OR', 'AND', 'GT', 'EQ', 'LE'}
+Expr'          : {'SEMI', 'LT', 'OR', 'AND', 'GT', 'EQ', 'LE', 'GE', 'NE', 'RPAREN'}
+Term           : {'SEMI', 'LT', 'OR', 'AND', 'GT', 'EQ', 'PLUS', 'LE', 'MINUS', 'GE', 'NE', 'RPAREN'}
+Term'          : {'SEMI', 'LT', 'OR', 'AND', 'GT', 'EQ', 'PLUS', 'LE', 'MINUS', 'GE', 'NE', 'RPAREN'}
+Factor         : {'SEMI', 'LT', 'DIV', 'OR', 'MOD', 'AND', 'GT', 'EQ', 'PLUS', 'LE', 'MULT', 'MINUS', 'GE', 'NE', 'RPAREN'}
+BoolExpr       : {'RPAREN'}
+BoolExpr'      : {'RPAREN'}
+BoolTerm       : {'OR', 'RPAREN'}
+BoolTerm'      : {'OR', 'RPAREN'}
+BoolFactor     : {'OR', 'AND', 'RPAREN'}
+RelExpr        : {'OR', 'AND', 'RPAREN'}
+RelOp          : {'INT', 'FLOAT', 'LPAREN', 'ID'}
+
+
+
+--- LL(1) PARSE PREVIEW ---
+STEP | STACK (Top on Right)                                         | LOOKAHEAD | ACTION
+----------------------------------------------------------------------------------------
+1    | ['$', 'Program']                                             | INT       | Apply Program -> StmtList
+2    | ['$', 'StmtList']                                            | INT       | Apply StmtList -> Stmt StmtList
+3    | ['$', 'StmtList', 'Stmt']                                    | INT       | Apply Stmt -> Decl
+4    | ['$', 'StmtList', 'Decl']                                    | INT       | Apply Decl -> Type ID DeclTail
+5    | ['$', 'StmtList', 'DeclTail', 'ID', 'Type']                  | INT       | Apply Type -> INT
+6    | ['$', 'StmtList', 'DeclTail', 'ID', 'INT']                   | INT       | Match INT
+7    | ['$', 'StmtList', 'DeclTail', 'ID']                          | ID        | Match ID
+8    | ['$', 'StmtList', 'DeclTail']                                | SEMI      | Apply DeclTail -> SEMI
+9    | ['$', 'StmtList', 'SEMI']                                    | SEMI      | Match SEMI
+10   | ['$', 'StmtList']                                            | INT       | Apply StmtList -> Stmt StmtList
+11   | ['$', 'StmtList', 'Stmt']                                    | INT       | Apply Stmt -> Decl
+12   | ['$', 'StmtList', 'Decl']                                    | INT       | Apply Decl -> Type ID DeclTail
+13   | ['$', 'StmtList', 'DeclTail', 'ID', 'Type']                  | INT       | Apply Type -> INT
+14   | ['$', 'StmtList', 'DeclTail', 'ID', 'INT']                   | INT       | Match INT
+15   | ['$', 'StmtList', 'DeclTail', 'ID']                          | ID        | Match ID
+16   | ['$', 'StmtList', 'DeclTail']                                | SEMI      | Apply DeclTail -> SEMI
+17   | ['$', 'StmtList', 'SEMI']                                    | SEMI      | Match SEMI
+18   | ['$', 'StmtList']                                            | FLOAT     | Apply StmtList -> Stmt StmtList
+19   | ['$', 'StmtList', 'Stmt']                                    | FLOAT     | Apply Stmt -> Decl
+20   | ['$', 'StmtList', 'Decl']                                    | FLOAT     | Apply Decl -> Type ID DeclTail
+21   | ['$', 'StmtList', 'DeclTail', 'ID', 'Type']                  | FLOAT     | Apply Type -> FLOAT
+22   | ['$', 'StmtList', 'DeclTail', 'ID', 'FLOAT']                 | FLOAT     | Match FLOAT
+23   | ['$', 'StmtList', 'DeclTail', 'ID']                          | ID        | Match ID
+24   | ['$', 'StmtList', 'DeclTail']                                | SEMI      | Apply DeclTail -> SEMI
+25   | ['$', 'StmtList', 'SEMI']                                    | SEMI      | Match SEMI
+26   | ['$', 'StmtList']                                            | INT       | Apply StmtList -> Stmt StmtList
+27   | ['$', 'StmtList', 'Stmt']                                    | INT       | Apply Stmt -> Decl
+28   | ['$', 'StmtList', 'Decl']                                    | INT       | Apply Decl -> Type ID DeclTail
+29   | ['$', 'StmtList', 'DeclTail', 'ID', 'Type']                  | INT       | Apply Type -> INT
+30   | ['$', 'StmtList', 'DeclTail', 'ID', 'INT']                   | INT       | Match INT
+31   | ['$', 'StmtList', 'DeclTail', 'ID']                          | ID        | Match ID
+32   | ['$', 'StmtList', 'DeclTail']                                | SEMI      | Apply DeclTail -> SEMI
+33   | ['$', 'StmtList', 'SEMI']                                    | SEMI      | Match SEMI
+34   | ['$', 'StmtList']                                            | INT       | Apply StmtList -> Stmt StmtList
+35   | ['$', 'StmtList', 'Stmt']                                    | INT       | Apply Stmt -> Decl
+36   | ['$', 'StmtList', 'Decl']                                    | INT       | Apply Decl -> Type ID DeclTail
+37   | ['$', 'StmtList', 'DeclTail', 'ID', 'Type']                  | INT       | Apply Type -> INT
+38   | ['$', 'StmtList', 'DeclTail', 'ID', 'INT']                   | INT       | Match INT
+39   | ['$', 'StmtList', 'DeclTail', 'ID']                          | ID        | Match ID
+40   | ['$', 'StmtList', 'DeclTail']                                | SEMI      | Apply DeclTail -> SEMI
+41   | ['$', 'StmtList', 'SEMI']                                    | SEMI      | Match SEMI
+42   | ['$', 'StmtList']                                            | ID        | Apply StmtList -> Stmt StmtList
+43   | ['$', 'StmtList', 'Stmt']                                    | ID        | Apply Stmt -> AssignStmt
+44   | ['$', 'StmtList', 'AssignStmt']                              | ID        | Apply AssignStmt -> ID ASSIGN Expr SEMI
+45   | ['$', 'StmtList', 'SEMI', 'Expr', 'ASSIGN', 'ID']            | ID        | Match ID
+46   | ['$', 'StmtList', 'SEMI', 'Expr', 'ASSIGN']                  | ASSIGN    | Match ASSIGN
+47   | ['$', 'StmtList', 'SEMI', 'Expr']                            | FLOAT     | Apply Expr -> Term Expr'
+48   | ['$', 'StmtList', 'SEMI', "Expr'", 'Term']                   | FLOAT     | Apply Term -> Factor Term'
+49   | ['$', 'StmtList', 'SEMI', "Expr'", "Term'", 'Factor']        | FLOAT     | Apply Factor -> FLOAT
+50   | ['$', 'StmtList', 'SEMI', "Expr'", "Term'", 'FLOAT']         | FLOAT     | Match FLOAT
+51   | ['$', 'StmtList', 'SEMI', "Expr'", "Term'"]                  | SEMI      | Apply Term' -> ε
+52   | ['$', 'StmtList', 'SEMI', "Expr'"]                           | SEMI      | Apply Expr' -> ε
+53   | ['$', 'StmtList', 'SEMI']                                    | SEMI      | Match SEMI
+54   | ['$', 'StmtList']                                            | FLOAT     | Apply StmtList -> Stmt StmtList
+55   | ['$', 'StmtList', 'Stmt']                                    | FLOAT     | Apply Stmt -> Decl
+56   | ['$', 'StmtList', 'Decl']                                    | FLOAT     | Apply Decl -> Type ID DeclTail
+57   | ['$', 'StmtList', 'DeclTail', 'ID', 'Type']                  | FLOAT     | Apply Type -> FLOAT
+58   | ['$', 'StmtList', 'DeclTail', 'ID', 'FLOAT']                 | FLOAT     | Match FLOAT
+59   | ['$', 'StmtList', 'DeclTail', 'ID']                          | ID        | Match ID
+60   | ['$', 'StmtList', 'DeclTail']                                | ASSIGN    | Apply DeclTail -> ASSIGN Expr SEMI
+61   | ['$', 'StmtList', 'SEMI', 'Expr', 'ASSIGN']                  | ASSIGN    | Match ASSIGN
+62   | ['$', 'StmtList', 'SEMI', 'Expr']                            | INT       | Apply Expr -> Term Expr'
+63   | ['$', 'StmtList', 'SEMI', "Expr'", 'Term']                   | INT       | Apply Term -> Factor Term'
+64   | ['$', 'StmtList', 'SEMI', "Expr'", "Term'", 'Factor']        | INT       | Apply Factor -> INT
+65   | ['$', 'StmtList', 'SEMI', "Expr'", "Term'", 'INT']           | INT       | Match INT
+66   | ['$', 'StmtList', 'SEMI', "Expr'", "Term'"]                  | SEMI      | Apply Term' -> ε
+67   | ['$', 'StmtList', 'SEMI', "Expr'"]                           | SEMI      | Apply Expr' -> ε
+68   | ['$', 'StmtList', 'SEMI']                                    | SEMI      | Match SEMI
+69   | ['$', 'StmtList']                                            | ID        | Apply StmtList -> Stmt StmtList
+70   | ['$', 'StmtList', 'Stmt']                                    | ID        | Apply Stmt -> AssignStmt
+71   | ['$', 'StmtList', 'AssignStmt']                              | ID        | Apply AssignStmt -> ID ASSIGN Expr SEMI
+72   | ['$', 'StmtList', 'SEMI', 'Expr', 'ASSIGN', 'ID']            | ID        | Match ID
+73   | ['$', 'StmtList', 'SEMI', 'Expr', 'ASSIGN']                  | ASSIGN    | Match ASSIGN
+74   | ['$', 'StmtList', 'SEMI', 'Expr']                            | INT       | Apply Expr -> Term Expr'
+75   | ['$', 'StmtList', 'SEMI', "Expr'", 'Term']                   | INT       | Apply Term -> Factor Term'
+... (Remaining 126 steps processed) ...
+
+[Success] Parsing completed successfully in 201 steps.
+[Success] Full trace saved to traces/ll1_trace.txt
+
+
+--- SLR(1) PARSE PREVIEW ---
+STEP | STACK (States)                           | LOOKAHEAD | ACTION
+--------------------------------------------------------------------
+1   | [0]                                      | INT    | s14
+2   | [0, 14]                                  | ID     | r13
+3   | [0, 13]                                  | ID     | s21
+4   | [0, 13, 21]                              | SEMI   | s42
+5   | [0, 13, 21, 42]                          | INT    | r12
+6   | [0, 13, 21, 41]                          | INT    | r10
+7   | [0, 3]                                   | INT    | r4
+8   | [0, 15]                                  | INT    | s14
+9   | [0, 15, 14]                              | ID     | r13
+10  | [0, 15, 13]                              | ID     | s21
+11  | [0, 15, 13, 21]                          | SEMI   | s42
+12  | [0, 15, 13, 21, 42]                      | FLOAT  | r12
+13  | [0, 15, 13, 21, 41]                      | FLOAT  | r10
+14  | [0, 15, 3]                               | FLOAT  | r4
+15  | [0, 15, 15]                              | FLOAT  | s6
+16  | [0, 15, 15, 6]                           | ID     | r14
+17  | [0, 15, 15, 13]                          | ID     | s21
+18  | [0, 15, 15, 13, 21]                      | SEMI   | s42
+19  | [0, 15, 15, 13, 21, 42]                  | INT    | r12
+20  | [0, 15, 15, 13, 21, 41]                  | INT    | r10
+21  | [0, 15, 15, 3]                           | INT    | r4
+22  | [0, 15, 15, 15]                          | INT    | s14
+23  | [0, 15, 15, 15, 14]                      | ID     | r13
+24  | [0, 15, 15, 15, 13]                      | ID     | s21
+25  | [0, 15, 15, 15, 13, 21]                  | SEMI   | s42
+26  | [0, 15, 15, 15, 13, 21, 42]              | INT    | r12
+27  | [0, 15, 15, 15, 13, 21, 41]              | INT    | r10
+28  | [0, 15, 15, 15, 3]                       | INT    | r4
+29  | [0, 15, 15, 15, 15]                      | INT    | s14
+30  | [0, 15, 15, 15, 15, 14]                  | ID     | r13
+31  | [0, 15, 15, 15, 15, 13]                  | ID     | s21
+32  | [0, 15, 15, 15, 15, 13, 21]              | SEMI   | s42
+33  | [0, 15, 15, 15, 15, 13, 21, 42]          | ID     | r12
+34  | [0, 15, 15, 15, 15, 13, 21, 41]          | ID     | r10
+35  | [0, 15, 15, 15, 15, 3]                   | ID     | r4
+36  | [0, 15, 15, 15, 15, 15]                  | ID     | s17
+37  | [0, 15, 15, 15, 15, 15, 17]              | ASSIGN | s24
+38  | [0, 15, 15, 15, 15, 15, 17, 24]          | FLOAT  | s25
+39  | [0, 15, 15, 15, 15, 15, 17, 24, 25]      | SEMI   | r34
+40  | [0, 15, 15, 15, 15, 15, 17, 24, 28]      | SEMI   | r30
+41  | [0, 15, 15, 15, 15, 15, 17, 24, 28, 49]  | SEMI   | r26
+42  | [0, 15, 15, 15, 15, 15, 17, 24, 27]      | SEMI   | r25
+43  | [0, 15, 15, 15, 15, 15, 17, 24, 27, 48]  | SEMI   | r22
+44  | [0, 15, 15, 15, 15, 15, 17, 24, 44]      | SEMI   | s71
+45  | [0, 15, 15, 15, 15, 15, 17, 24, 44, 71]  | FLOAT  | r16
+46  | [0, 15, 15, 15, 15, 15, 7]               | FLOAT  | r5
+47  | [0, 15, 15, 15, 15, 15, 15]              | FLOAT  | s6
+48  | [0, 15, 15, 15, 15, 15, 15, 6]           | ID     | r14
+49  | [0, 15, 15, 15, 15, 15, 15, 13]          | ID     | s21
+50  | [0, 15, 15, 15, 15, 15, 15, 13, 21]      | ASSIGN | s40
+51  | [0, 15, 15, 15, 15, 15, 15, 13, 21, 40]  | INT    | s29
+52  | ..., 15, 15, 15, 15, 15, 13, 21, 40, 29] | SEMI   | r33
+53  | ..., 15, 15, 15, 15, 15, 13, 21, 40, 28] | SEMI   | r30
+54  | ..., 15, 15, 15, 15, 13, 21, 40, 28, 49] | SEMI   | r26
+55  | ..., 15, 15, 15, 15, 15, 13, 21, 40, 27] | SEMI   | r25
+56  | ..., 15, 15, 15, 15, 13, 21, 40, 27, 48] | SEMI   | r22
+57  | ..., 15, 15, 15, 15, 15, 13, 21, 40, 70] | SEMI   | s85
+58  | ..., 15, 15, 15, 15, 13, 21, 40, 70, 85] | ID     | r11
+59  | [0, 15, 15, 15, 15, 15, 15, 13, 21, 41]  | ID     | r10
+60  | [0, 15, 15, 15, 15, 15, 15, 3]           | ID     | r4
+61  | [0, 15, 15, 15, 15, 15, 15, 15]          | ID     | s17
+62  | [0, 15, 15, 15, 15, 15, 15, 15, 17]      | ASSIGN | s24
+63  | [0, 15, 15, 15, 15, 15, 15, 15, 17, 24]  | INT    | s29
+64  | ..., 15, 15, 15, 15, 15, 15, 17, 24, 29] | SEMI   | r33
+65  | ..., 15, 15, 15, 15, 15, 15, 17, 24, 28] | SEMI   | r30
+66  | ..., 15, 15, 15, 15, 15, 17, 24, 28, 49] | SEMI   | r26
+67  | ..., 15, 15, 15, 15, 15, 15, 17, 24, 27] | SEMI   | r25
+68  | ..., 15, 15, 15, 15, 15, 17, 24, 27, 48] | SEMI   | r22
+69  | ..., 15, 15, 15, 15, 15, 15, 17, 24, 44] | SEMI   | s71
+70  | ..., 15, 15, 15, 15, 15, 17, 24, 44, 71] | WHILE  | r16
+71  | [0, 15, 15, 15, 15, 15, 15, 15, 7]       | WHILE  | r5
+72  | [0, 15, 15, 15, 15, 15, 15, 15, 15]      | WHILE  | s11
+73  | [0, 15, 15, 15, 15, 15, 15, 15, 15, 11]  | LPAREN | s19
+74  | ..., 15, 15, 15, 15, 15, 15, 15, 11, 19] | ID     | s31
+75  | ..., 15, 15, 15, 15, 15, 15, 11, 19, 31] | EQ     | r32
+... (Remaining 126 steps processed) ...
+
+[Success] SLR Parsing completed successfully in 201 steps.
+[Success] Full SLR trace saved to traces/slr_trace.txt
+
+════════════════════════════════════════════════════════════
+═════════════════ LL1 SYMBOL TABLE REPORT ══════════════════
+════════════════════════════════════════════════════════════
+
+▣ STEP-BY-STEP UPDATES
+────────────────────────────────────────
+  • Allocating x (int) at offset 0
+  • Allocating y (int) at offset 4
+  • Allocating avg (float) at offset 8
+  • Allocating k (float) at offset 16
+  ▸ --- Entering Scope Level 1 ---
+  • Allocating temp (int) at offset 24
+  ▸ --- Entering Scope Level 2 ---
+  ▸ --- Exiting to Scope Level 1 ---
+  ▸ --- Entering Scope Level 2 ---
+  ▸ --- Exiting to Scope Level 1 ---
+  • --- Exiting to Scope Level 0 ---
+
+▣ FINAL ATTRIBUTE SUMMARY
+────────────────────────────────────────────────────────────
+Variable     | Type       | Scope    | Offset  
+------------------------------------------------------------
+x            | int        | 0        | 0       
+y            | int        | 0        | 4       
+avg          | float      | 0        | 8       
+k            | float      | 0        | 16      
+temp         | int        | 1        | 24      
+────────────────────────────────────────────────────────────
+Total Stack Memory Reserved: 28 bytes
+════════════════════════════════════════════════════════════
+
+[Success] LL1 symbol table generated.
+
+════════════════════════════════════════════════════════════
+═════════════════ SLR SYMBOL TABLE REPORT ══════════════════
+════════════════════════════════════════════════════════════
+
+▣ STEP-BY-STEP UPDATES
+────────────────────────────────────────
+  • Allocating x (int) at offset 0
+  • Allocating y (int) at offset 4
+  • Allocating avg (float) at offset 8
+  • Allocating k (float) at offset 16
+  ▸ --- Entering Scope Level 1 ---
+  • Allocating temp (int) at offset 24
+  ▸ --- Entering Scope Level 2 ---
+  ▸ --- Exiting to Scope Level 1 ---
+  ▸ --- Entering Scope Level 2 ---
+  ▸ --- Exiting to Scope Level 1 ---
+  • --- Exiting to Scope Level 0 ---
+
+▣ FINAL ATTRIBUTE SUMMARY
+────────────────────────────────────────────────────────────
+Variable     | Type       | Scope    | Offset  
+------------------------------------------------------------
+x            | int        | 0        | 0       
+y            | int        | 0        | 4       
+avg          | float      | 0        | 8       
+k            | float      | 0        | 16      
+temp         | int        | 1        | 24      
+────────────────────────────────────────────────────────────
+Total Stack Memory Reserved: 28 bytes
+════════════════════════════════════════════════════════════
+
+[Success] SLR symbol table generated.
+
+══════════════════════════════════════════════════════════════
+═══════════════════ SEMANTIC ERROR REPORT ════════════════════
+══════════════════════════════════════════════════════════════
+  Total errors found: 12
+──────────────────────────────────────────────────────────────
+
+  ▸ LL(1) detected 6 error(s):
+
+    [Error] Multiple Declaration: Variable 'x' at line 4, column 5 is already declared in this scope.
+    [Error] Multiple Declaration: Variable 'y' at line 5, column 5 is already declared in this scope.
+    [Error] Type Mismatch at line 6: cannot assign float literal '3.7' to int variable 'x'.
+    [Error] Invalid Boolean Condition at line 9: operator '==' cannot be used with float operands ('avg' == '2.5'). Use '<', '>', '<=', '>=' for float comparisons.
+    [Error] Invalid Boolean Condition at line 12: operator '!=' cannot be used with float operands ('temp' != '1.0'). Use '<', '>', '<=', '>=' for float comparisons.
+    [Error] Undeclared Variable: 'z' used at line 13, column 7 without prior declaration.
+
+  ▸ SLR(1) detected 6 error(s):
+
+    [Error] Multiple Declaration: Variable 'x' at line 5 is already declared in this scope.
+    [Error] Multiple Declaration: Variable 'y' at line 6 is already declared in this scope.
+    [Error] Type Mismatch at line 7: cannot assign float value '3.7' to int variable 'x'.
+    [Error] Invalid Boolean Condition at line 9: operator '==' cannot be used with float operands ('avg' == '2.5'). Use '<', '>', '<=', '>=' for float comparisons.
+    [Error] Invalid Boolean Condition at line 12: operator '!=' cannot be used with float operands ('temp' != '1.0'). Use '<', '>', '<=', '>=' for float comparisons.
+    [Error] Undeclared Variable: 'z' used at line 13 without prior declaration.
+
+══════════════════════════════════════════════════════════════
+═══════ TAC generation skipped due to semantic errors. ═══════
+══════════════════════════════════════════════════════════════
+
