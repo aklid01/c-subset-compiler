@@ -455,10 +455,22 @@ class LL1Parser:
         frames = []
         success, _ = self._run_parse_loop(capture_list=frames)
         final_output = []
+        final_output.append("FIRST SETS:")
+        for k, v in self.first.items():
+            final_output.append(f"  {k:15}: {v}")
+        final_output.append("\nFOLLOW SETS:")
+        for k, v in self.follow.items():
+            final_output.append(f"  {k:15}: {v}")
+
+        final_output.append(
+            f"\n[Success] LL(1) Parsing completed successfully in {len(frames)} steps."
+        )
         if self.semantic_errors:
-            final_output.append(f"  Total errors found: {len(self.semantic_errors)}")
+            final_output.append(f"\nTotal errors found: {len(self.semantic_errors)}")
             for err in self.semantic_errors:
-                final_output.append(f"    {err}")
+                final_output.append(f"  {err}")
+        else:
+            final_output.append("\nNo semantic errors detected.")
         return PhaseCapture(
             name="ll1_parser", frames=frames, success=success, final_output=final_output
         )

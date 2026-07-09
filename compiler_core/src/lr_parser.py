@@ -371,10 +371,15 @@ class SLRParser:
             capture_list=frames, tac_capture_list=tac_capture_list
         )
         final_output = []
+        final_output.append(
+            f"[Success] SLR(1) Parsing completed successfully in {len(frames)} steps."
+        )
         if self.semantic_errors:
-            final_output.append(f"  Total errors found: {len(self.semantic_errors)}")
+            final_output.append(f"\nTotal errors found: {len(self.semantic_errors)}")
             for err in self.semantic_errors:
-                final_output.append(f"    {err}")
+                final_output.append(f"  {err}")
+        else:
+            final_output.append("\nNo semantic errors detected.")
         return PhaseCapture(
             name="slr_parser",
             frames=frames,

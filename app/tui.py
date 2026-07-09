@@ -9,14 +9,13 @@ from typing import TYPE_CHECKING
 
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical
-from textual.widgets import Footer, Header, Label, ListItem, ListView, Static
+from textual.widgets import Footer, Header, Label, ListItem, ListView, Static, TextArea
 
 if TYPE_CHECKING:
     from app.session import VizSession
     from compiler_core.frames import StepFrame
 
 from rich.panel import Panel
-from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text
 
@@ -107,7 +106,12 @@ class VisualizerApp(App):
                 yield Static(id="step_info")
                 with Horizontal(id="middle_container"):
                     yield Static(id="state_context")
-                    yield Static(id="source_code")
+                    yield TextArea(
+                        self.session.source,
+                        language="c",
+                        id="source_code",
+                        read_only=True,
+                    )
                 yield Static(id="console_output")
 
         yield Footer()
@@ -144,6 +148,33 @@ class VisualizerApp(App):
         capture = self.session.captures.get(phase) if phase else None
 
         if not capture:
+            self.query_one("#step_info", Static).update(
+                Panel(
+                    Text.assemble(
+                        ("[Skipped] ", "bold red"),
+                        (
+                            f"Phase {self.phase_map.get(phase, phase)} was not executed",
+                            "bold white",
+                        ),
+                    ),
+                    title="Current Step Action",
+                    border_style="red",
+                )
+            )
+            self.query_one("#source_code", TextArea).text = self.session.source
+            self.query_one("#console_output", Static).update(
+                Panel(
+                    (
+                        "This phase was skipped because earlier stages of "
+                        "compilation failed or encountered semantic errors."
+                    ),
+                    title=f"Final Output for {self.phase_map.get(phase, phase)}",
+                    border_style="red",
+                )
+            )
+            self.query_one("#state_context", Static).update(
+                "No active frame details (phase skipped)."
+            )
             return
 
         frames_count = len(capture.frames)
@@ -160,26 +191,16 @@ class VisualizerApp(App):
             )
         )
 
-        # Update source code preview with highlight line
+        # Update source code preview using TextArea cursor tracking
+        source_widget = self.query_one("#source_code", TextArea)
         line_num = None
         if frame and frame.detail:
             line_num = frame.detail.get("line")
 
-        highlight_lines = {line_num} if line_num else set()
-        syntax = Syntax(
-            self.session.source,
-            "c",
-            theme="monokai",
-            line_numbers=True,
-            highlight_lines=highlight_lines,
-        )
-        self.query_one("#source_code", Static).update(syntax)
-
         if line_num is not None:
-            source_widget = self.query_one("#source_code", Static)
-            viewport_height = source_widget.size.height or 15
-            target_y = max(0, line_num - (viewport_height // 2))
-            self.call_after_refresh(source_widget.scroll_to, y=target_y, animate=False)
+            source_widget.cursor_location = (line_num - 1, 0)
+        else:
+            source_widget.cursor_location = (0, 0)
 
         # Update console final output block
         final_lines = "\n".join(capture.final_output) if capture.final_output else ""

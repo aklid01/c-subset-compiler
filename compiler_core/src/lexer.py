@@ -183,9 +183,15 @@ def tokenize_capture(code: str) -> "PhaseCapture":
 
     final_output = []
     if errors:
-        final_output.append("\nLexical Errors\n")
+        final_output.append("Lexical Errors:")
         for err in errors:
             final_output.append(err)
+    else:
+        final_output.append("[Success] Lexical Analysis completed successfully.")
+        final_output.append(f"Total tokens matched: {len(tokens) - 1}")
+        final_output.append("\nTokens matched:")
+        for t in tokens[:-1]:
+            final_output.append(f"  <{t.kind}, '{t.value}', line {t.line}, col {t.col}>")
 
     return PhaseCapture(
         name="lexer",
