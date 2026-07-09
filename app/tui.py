@@ -43,6 +43,9 @@ class VisualizerApp(App):
     Screen {
         background: #121212;
     }
+    #layout_body {
+        height: 1fr;
+    }
     #sidebar {
         width: 30;
         height: 100%;
@@ -104,7 +107,7 @@ class VisualizerApp(App):
 
         yield Header()
 
-        with Horizontal():
+        with Horizontal(id="layout_body"):
             yield Container(ListView(*list_items, id="phase_list"), id="sidebar")
 
             with Vertical(id="main_container"):
