@@ -78,6 +78,12 @@ class VisualizerApp(App):
         border: tall #444444;
         overflow-y: auto;
     }
+    #assembly_code_viewer {
+        height: 1fr;
+        background: #121212;
+        border: tall #00bcd4;
+        display: none;
+    }
     """
 
     def __init__(self, session: VizSession):
@@ -109,6 +115,10 @@ class VisualizerApp(App):
                 with Horizontal(id="middle_container"):
                     with ScrollableContainer(id="state_context"):
                         yield Static(id="state_context_content")
+                        yield NonFocusTextArea(
+                            id="assembly_code_viewer",
+                            read_only=True,
+                        )
                     yield NonFocusTextArea(
                         self.session.source,
                         language="c",
@@ -120,6 +130,9 @@ class VisualizerApp(App):
 
     def on_mount(self) -> None:
         self.query_one("#phase_list").index = 0
+        self.query_one("#assembly_code_viewer", NonFocusTextArea).border_title = (
+            "Emitted Target Assembly Code (Full Stream)"
+        )
         self.update_ui()
 
     def on_list_view_selected(self, event: ListView.Selected) -> None:
@@ -157,6 +170,7 @@ class VisualizerApp(App):
         capture = self.session.captures.get(phase) if phase else None
 
         if not capture:
+            self.query_one("#assembly_code_viewer", NonFocusTextArea).display = False
             self.query_one("#step_info", Static).update(
                 Panel(
                     Text.assemble(
@@ -178,6 +192,9 @@ class VisualizerApp(App):
 
         frames_count = len(capture.frames)
         frame = self.session.get_current_frame()
+
+        # Hide or show assembly viewer based on phase
+        self.query_one("#assembly_code_viewer", NonFocusTextArea).display = phase == "code_gen"
 
         # Update step info header
         step_title = frame.title if frame else "End of Phase"
@@ -395,16 +412,10 @@ class VisualizerApp(App):
 
             layout_table.add_row(details_panel, reg_table)
 
-            full_instrs_text = "\n".join(instructions) if instructions else ""
+            self.query_one("#state_context_content", Static).update(layout_table)
 
-            self.query_one("#state_context_content", Static).update(
-                Group(
-                    layout_table,
-                    Text("\n"),
-                    Panel(
-                        full_instrs_text,
-                        title="Emitted Target Assembly Code (Full Stream)",
-                        border_style="cyan",
-                    ),
-                )
-            )
+            full_instrs_text = "\n".join(instructions) if instructions else ""
+            asm_viewer = self.query_one("#assembly_code_viewer", NonFocusTextArea)
+            asm_viewer.text = full_instrs_text
+            if instructions:
+                asm_viewer.cursor_location = (len(instructions) - 1, 0)
