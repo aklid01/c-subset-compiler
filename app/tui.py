@@ -441,7 +441,10 @@ class VisualizerApp(App):
             reg_table.add_column("Register", style="bold yellow")
             reg_table.add_column("Assigned Variable", style="cyan")
             for reg, var in sorted(registers.items()):
-                reg_table.add_row(reg, var)
+                display_var = var
+                if var.startswith("__imm_"):
+                    display_var = var.split("_", 4)[-1]
+                reg_table.add_row(reg, display_var)
 
             # Create a 2-column layout grid to display Details Panel and Register Table side-by-side
             layout_table = Table.grid(expand=True)
