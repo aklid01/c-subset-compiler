@@ -1,4 +1,12 @@
-def leftmost_derivation():
+"""
+Derivation module for the C-subset compiler.
+Simulates leftmost and rightmost derivations for compiler explanation,
+representing parse-tree reduction/expansion steps.
+"""
+
+
+def leftmost_derivation() -> None:
+    """Print the leftmost derivation steps for a sample assignment statement."""
 
     print("\nLEFTMOST DERIVATION\n")
 
@@ -18,7 +26,8 @@ def leftmost_derivation():
         print("→", s)
 
 
-def rightmost_derivation():
+def rightmost_derivation() -> None:
+    """Print the rightmost derivation steps for a sample assignment statement."""
 
     print("\nRIGHTMOST DERIVATION\n")
 

@@ -1,3 +1,10 @@
+"""
+Lexer module for the C-subset compiler.
+Performs lexical analysis by converting C-subset source code
+into a stream of tokens while capturing syntax-level lexical errors.
+This is the first stage in the compiler pipeline.
+"""
+
 import re
 
 token_specification = [
@@ -31,12 +38,11 @@ token_specification = [
 
 keywords = {"int", "float", "if", "else", "while", "print"}
 
-regex_pattern = re.compile(
-    "|".join("(?P<%s>%s)" % pair for pair in token_specification)
-)
+regex_pattern = re.compile("|".join("(?P<%s>%s)" % pair for pair in token_specification))
 
 
-def tokenize(code):
+def tokenize(code: str) -> tuple[list[tuple[str, str, int, int]], list[str]]:
+    """Tokenize the C-subset source code and return a tuple of (tokens, errors)."""
     tokens = []
     errors = []
     line_num = 1

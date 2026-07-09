@@ -1,3 +1,9 @@
+"""
+Optimizer module for the C-subset compiler.
+Provides constant folding, constant propagation, and dead code elimination (DCE)
+passes to optimize generated Three-Address Code (TAC).
+"""
+
 import copy
 
 _ARITH_OPS = {"+", "-", "*", "/", "%"}
@@ -59,7 +65,8 @@ def _eval_relop(op, a, b):
     return None
 
 
-def constant_folding(quads):
+def constant_folding(quads: list[list[str]]) -> tuple[list[list[str]], list[str]]:
+    """Fold arithmetic operations on numeric constants into a single constant assignment."""
     quads = copy.deepcopy(quads)
     log = []
     for i, q in enumerate(quads):
@@ -77,7 +84,8 @@ def constant_folding(quads):
     return quads, log
 
 
-def constant_propagation(quads):
+def constant_propagation(quads: list[list[str]]) -> tuple[list[list[str]], list[str]]:
+    """Propagate constant values into subsequent uses until re-assignment or jump labels."""
     quads = copy.deepcopy(quads)
     log = []
     const_map = {}
@@ -113,7 +121,8 @@ def constant_propagation(quads):
     return quads, log
 
 
-def dead_code_elimination(quads):
+def dead_code_elimination(quads: list[list[str]]) -> tuple[list[list[str]], list[str]]:
+    """Remove unused temporary variable definitions that do not affect program output."""
     quads = copy.deepcopy(quads)
     log = []
 
@@ -147,12 +156,7 @@ def dead_code_elimination(quads):
         new_quads = []
         for i, q in enumerate(quads):
             d = _def(q)
-            if (
-                d
-                and d.startswith("t")
-                and d not in all_used
-                and q[0] not in _ALWAYS_KEEP
-            ):
+            if d and d.startswith("t") and d not in all_used and q[0] not in _ALWAYS_KEEP:
                 log.append(f"  [{i:>3}] removed dead: '{d}' = {q[0]} {q[1]} {q[2]}")
                 changed = True
             else:
@@ -162,7 +166,10 @@ def dead_code_elimination(quads):
     return quads, log
 
 
-def optimize(quads):
+def optimize(quads: list[list[str]]) -> tuple[list[list[str]], str]:
+    """Optimize Three-Address Code by executing folding, propagation,
+    and dead code elimination passes.
+    """
     width = 62
     lines = []
     lines.append("\n" + "═" * width)

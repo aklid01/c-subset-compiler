@@ -1,7 +1,8 @@
 import sys
-from src.lexer import tokenize
-from src.lr_parser import SLRParser
-from src.parser import LL1Parser
+
+from compiler_core.src.lexer import tokenize
+from compiler_core.src.lr_parser import SLRParser
+from compiler_core.src.parser import LL1Parser
 
 
 def run_compiler(file_path):

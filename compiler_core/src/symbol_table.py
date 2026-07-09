@@ -1,36 +1,44 @@
+"""
+Symbol Table module for the C-subset compiler.
+Manages scoped symbols (variables), tracking their names, types,
+scope levels, and memory offsets. Used during semantic analysis.
+"""
+
+
 class Symbol:
-    def __init__(self, name, data_type, scope_level, offset):
+    def __init__(self, name: str, data_type: str, scope_level: int, offset: int):
         self.name = name
         self.data_type = data_type
         self.scope_level = scope_level
         self.offset = offset
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"[{self.data_type} | Scope:{self.scope_level} | Offset:{self.offset}]"
 
 
 class SymbolTable:
     def __init__(self):
-        self.scopes = [{}]
-        self.history = []
-        self.log = []
+        self.scopes: list[dict[str, Symbol]] = [{}]
+        self.history: list[tuple[str, Symbol]] = []
+        self.log: list[str] = []
         self.current_scope_level = 0
         self.next_offset = 0
 
-    def enter_scope(self):
+    def enter_scope(self) -> None:
+        """Enter a new nested scope block."""
         self.scopes.append({})
         self.current_scope_level += 1
         self.log.append(f"--- Entering Scope Level {self.current_scope_level} ---")
 
-    def exit_scope(self):
+    def exit_scope(self) -> None:
+        """Exit the current scope block back to parent scope."""
         if self.current_scope_level > 0:
-            self.log.append(
-                f"--- Exiting to Scope Level {self.current_scope_level-1} ---"
-            )
+            self.log.append(f"--- Exiting to Scope Level {self.current_scope_level-1} ---")
             self.scopes.pop()
             self.current_scope_level -= 1
 
-    def insert(self, name, data_type):
+    def insert(self, name: str, data_type: str) -> bool:
+        """Insert a symbol into the current scope. Returns False if already declared."""
         if name in self.scopes[-1]:
             return False
         size = 8 if data_type.upper() == "FLOAT" else 4
@@ -43,13 +51,15 @@ class SymbolTable:
         self.next_offset += size
         return True
 
-    def lookup(self, name):
+    def lookup(self, name: str) -> Symbol | None:
+        """Look up a symbol by name traversing from inner to outer scopes."""
         for scope in reversed(self.scopes):
             if name in scope:
                 return scope[name]
         return None
 
-    def display(self, parser_name):
+    def display(self, parser_name: str) -> None:
+        """Print the step-by-step allocations and final attributes formatted report."""
         print("\n" + "═" * 60)
         print(f" {parser_name} SYMBOL TABLE REPORT ".center(60, "═"))
         print("═" * 60)
@@ -67,9 +77,7 @@ class SymbolTable:
         print("-" * 60)
 
         for name, sym in self.history:
-            print(
-                f"{name:<12} | {sym.data_type:<10} | {sym.scope_level:<8} | {sym.offset:<8}"
-            )
+            print(f"{name:<12} | {sym.data_type:<10} | {sym.scope_level:<8} | {sym.offset:<8}")
 
         print("─" * 60)
         print(f"Total Stack Memory Reserved: {self.next_offset} bytes")

@@ -1,13 +1,15 @@
 import os
-import sys
 import shutil
 import subprocess
+import sys
+
 
 def run_compiler(input_path):
     cmd = [sys.executable, "-X", "utf8", "main.py", input_path]
     env = {**os.environ, "PYTHONHASHSEED": "0"}
     res = subprocess.run(cmd, env=env, capture_output=True, text=True, encoding="utf-8")
     return res.stdout, res.stderr
+
 
 def get_generated_files():
     files = {}
@@ -19,6 +21,7 @@ def get_generated_files():
                     with open(path, "r", encoding="utf-8") as f:
                         files[os.path.join(folder, name).replace("\\", "/")] = f.read()
     return files
+
 
 def record_golden():
     os.makedirs("golden/artifacts/input/output", exist_ok=True)
@@ -50,8 +53,11 @@ def record_golden():
 
     print("Golden files successfully recorded.")
 
+
 def check_parity():
-    if not os.path.exists("golden/input_stdout.txt") or not os.path.exists("golden/code_stdout.txt"):
+    if not os.path.exists("golden/input_stdout.txt") or not os.path.exists(
+        "golden/code_stdout.txt"
+    ):
         print("Error: Golden files do not exist. Run with --record first.")
         sys.exit(1)
 
@@ -59,7 +65,7 @@ def check_parity():
 
     for key, input_file, golden_stdout_path, artifact_sub in [
         ("input", "input/input.txt", "golden/input_stdout.txt", "golden/artifacts/input"),
-        ("code", "code.txt", "golden/code_stdout.txt", "golden/artifacts/code")
+        ("code", "code.txt", "golden/code_stdout.txt", "golden/artifacts/code"),
     ]:
         stdout, _ = run_compiler(input_file)
         with open(golden_stdout_path, "r", encoding="utf-8") as f:
@@ -99,6 +105,7 @@ def check_parity():
     else:
         print("PARITY CHECK PASSED")
         sys.exit(0)
+
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--record":

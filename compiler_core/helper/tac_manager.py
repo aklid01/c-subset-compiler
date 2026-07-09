@@ -1,29 +1,42 @@
+"""
+TAC Manager module for the C-subset compiler.
+Manages the generation of intermediate Three-Address Code (TAC),
+providing temp/label allocation, code emission, and backpatching.
+"""
+
 import os
-from helper.optimizer import optimize
-from helper.code_gen import generate, display as cg_display, save as cg_save
+
+from compiler_core.helper.code_gen import display as cg_display
+from compiler_core.helper.code_gen import generate
+from compiler_core.helper.code_gen import save as cg_save
+from compiler_core.helper.optimizer import optimize
 
 _COL_W = 10
 
 
 class TACManager:
     def __init__(self):
-        self.quads = []
+        self.quads: list[list[str]] = []
         self.temp_count = 0
         self.label_count = 0
 
-    def new_temp(self):
+    def new_temp(self) -> str:
+        """Allocate a new temporary variable name."""
         self.temp_count += 1
         return f"t{self.temp_count}"
 
-    def new_label(self):
+    def new_label(self) -> str:
+        """Allocate a new jump label name."""
         self.label_count += 1
         return f"L{self.label_count}"
 
-    def emit(self, op, arg1, arg2, res):
+    def emit(self, op: str, arg1: str, arg2: str, res: str) -> int:
+        """Emit a TAC quadruple and return its index."""
         self.quads.append([op, arg1, arg2, res])
         return len(self.quads) - 1
 
-    def backpatch(self, quad_index, target_label):
+    def backpatch(self, quad_index: int, target_label: str) -> None:
+        """Backpatch the target label of a previously emitted pending quad."""
         self.quads[quad_index][3] = target_label
 
     def _header(self):
@@ -45,7 +58,8 @@ class TACManager:
         rows = [self._row(i, q) for i, q in enumerate(self.quads)]
         return [header, sep] + rows
 
-    def display(self):
+    def display(self) -> None:
+        """Display the Three-Address Code (TAC) quadruples on the console."""
         print("\n" + "═" * 60)
         print(" THREE-ADDRESS CODE  (Quadruples) ".center(60, "═"))
         print("═" * 60)
@@ -57,7 +71,8 @@ class TACManager:
         print(f"  Labels      : {self.label_count}")
         print("═" * 60 + "\n")
 
-    def save(self, path="./output/tac_output.txt"):
+    def save(self, path: str = "./output/tac_output.txt") -> None:
+        """Save the Three-Address Code (TAC) quadruples to a text file."""
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, "w", encoding="utf-8") as f:
             f.write("THREE-ADDRESS CODE  (Quadruples)\n")
@@ -72,10 +87,11 @@ class TACManager:
 
     def optimize_and_generate(
         self,
-        tac_path="./output/tac_output.txt",
-        opt_path="./output/optimized_tac_output.txt",
-        target_path="./output/target_output.txt",
-    ):
+        tac_path: str = "./output/tac_output.txt",
+        opt_path: str = "./output/optimized_tac_output.txt",
+        target_path: str = "./output/target_output.txt",
+    ) -> None:
+        """Optimize TAC and generate final target code representation."""
         self.save(tac_path)
 
         opt_quads, report = optimize(self.quads)

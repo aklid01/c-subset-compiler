@@ -1,12 +1,19 @@
-import pandas as pd
-from src.symbol_table import SymbolTable
-from helper.tac_manager import TACManager
+"""
+LR/SLR Parser module for the C-subset compiler.
+Implements an SLR(1) parser with DFA construction (LR(0) collection)
+and three-address code (TAC) generation with semantic checking.
+This is the third stage in the compiler pipeline.
+"""
+
+from compiler_core.helper.tac_manager import TACManager
+from compiler_core.src.symbol_table import SymbolTable
 
 _NO_OP = object()
 
 
 class SLRParser:
-    def __init__(self, tokens, base_parser):
+    def __init__(self, tokens: list[tuple[str, str, int, int]], base_parser):
+        """Initialize the SLR(1) parser with token stream and base parser (for sets)."""
         if not tokens or tokens[-1][0] != "EOF":
             self.tokens = tokens + [("EOF", "$", -1, -1)]
         else:
@@ -67,9 +74,7 @@ class SLRParser:
         i = 0
         while i < len(self.states):
             state = self.states[i]
-            symbols = set(
-                sym for _, rhs, dot in state if dot < len(rhs) for sym in [rhs[dot]]
-            )
+            symbols = set(sym for _, rhs, dot in state if dot < len(rhs) for sym in [rhs[dot]])
             for sym in symbols:
                 next_state = frozenset(self._goto(state, sym))
                 if next_state not in self.states:
@@ -89,10 +94,7 @@ class SLRParser:
                                 continue
                             r_idx = -1
                             for idx, (r_lhs, r_rhs) in enumerate(self.rules_list):
-                                if (
-                                    r_lhs == lhs
-                                    and tuple(r_rhs if r_rhs != ["ε"] else []) == rhs
-                                ):
+                                if r_lhs == lhs and tuple(r_rhs if r_rhs != ["ε"] else []) == rhs:
                                     r_idx = idx
                                     break
                             if r_idx != -1:
@@ -124,7 +126,8 @@ class SLRParser:
                 f"Use '<', '>', '<=', '>=' for float comparisons."
             )
 
-    def parse(self, output_file="slr_trace.txt"):
+    def parse(self, output_file: str = "slr_trace.txt") -> tuple[bool, TACManager]:
+        """Parse the token stream using the SLR(1) parsing table and generate TAC."""
         stack = [0]
         trace_log = []
         step = 0
@@ -281,11 +284,7 @@ class SLRParser:
                 elif rule_lhs == "BoolFactor" and len(rhs_vals) == 3:
                     res = rhs_vals[1]
 
-                elif (
-                    rule_lhs == "BoolFactor"
-                    and len(rhs_vals) == 2
-                    and rhs_vals[0] == "!"
-                ):
+                elif rule_lhs == "BoolFactor" and len(rhs_vals) == 2 and rhs_vals[0] == "!":
                     res = tac.new_temp()
                     tac.emit("NOT", rhs_vals[1], "-", res)
 
@@ -513,20 +512,14 @@ class SLRParser:
                         f"Step {entry['step']} | Stack: {entry['stack']} "
                         f"| Lookahead: {entry['lookahead']} | Action: {entry['action']}\n"
                     )
-            print(
-                f"\n[Success] SLR Parsing completed successfully in {len(trace_log)} steps."
-            )
+            print(f"\n[Success] SLR Parsing completed successfully in {len(trace_log)} steps.")
             print(f"[Success] Full SLR trace saved to traces/{output_file}")
         else:
             failed = trace_log[-1]
-            print(
-                f"\n[Fail] SLR Syntax error at line {failed['line']}, col {failed['col']}."
-            )
-            print(
-                f"[Fail] Found '{failed['val']}' with no valid transition in Action Table."
-            )
+            print(f"\n[Fail] SLR Syntax error at line {failed['line']}, col {failed['col']}.")
+            print(f"[Fail] Found '{failed['val']}' with no valid transition in Action Table.")
             print(f"[Fail] {failed['action']}")
-            print(f"[Fail] Parsing failed. No trace file was generated.")
+            print("[Fail] Parsing failed. No trace file was generated.")
 
         return success, tac
 

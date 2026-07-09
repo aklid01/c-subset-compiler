@@ -1,3 +1,9 @@
+"""
+Target Code Generator module for the C-subset compiler.
+Generates pseudo-assembly target code from optimized Three-Address Code (TAC),
+performing liveness analysis and register allocation.
+"""
+
 import os
 
 NUM_REGS = 8
@@ -121,7 +127,8 @@ class RegisterAllocator:
         self._name_locs.setdefault(name, set()).add("mem")
 
 
-def generate(quads):
+def generate(quads: list[list[str]]) -> list[str]:
+    """Generate pseudo-assembly instructions from TAC quadruples."""
     live_after = _compute_liveness(quads)
     ra = RegisterAllocator()
     instrs = []
@@ -194,7 +201,8 @@ def generate(quads):
     return instrs
 
 
-def display(instrs):
+def display(instrs: list[str]) -> None:
+    """Display the generated target pseudo-assembly on the console."""
     width = 62
     print("\n" + "═" * width)
     print(" TARGET CODE  (Pseudo-Assembly) ".center(width, "═"))
@@ -206,7 +214,8 @@ def display(instrs):
     print("═" * width + "\n")
 
 
-def save(instrs, path="./output/target_output.txt"):
+def save(instrs: list[str], path: str = "./output/target_output.txt") -> None:
+    """Save the generated target pseudo-assembly to a text file."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         f.write("TARGET CODE  (Pseudo-Assembly)\n")

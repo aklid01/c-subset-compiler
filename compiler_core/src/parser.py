@@ -1,9 +1,17 @@
+"""
+Parser module for the C-subset compiler.
+Implements an LL(1) recursive descent / table-driven parser
+with first/follow set generation and semantic type checks.
+This is the second stage in the compiler pipeline.
+"""
+
 import pandas as pd
-from src.symbol_table import SymbolTable
+
+from compiler_core.src.symbol_table import SymbolTable
 
 
 class LL1Parser:
-    def __init__(self, tokens):
+    def __init__(self, tokens: list[tuple[str, str, int, int]]):
         self.tokens = tokens
         self.symbol_table = SymbolTable()
         self.pos = 0
@@ -188,7 +196,8 @@ class LL1Parser:
                 f"Use '<', '>', '<=', '>=' for float comparisons."
             )
 
-    def parse(self, output_file="ll1_trace.txt"):
+    def parse(self, output_file: str = "ll1_trace.txt") -> bool:
+        """Parse the token stream using the LL(1) parsing table and perform semantic analysis."""
         pretty_names = {
             "SEMI": ";",
             "LPAREN": "(",
@@ -256,9 +265,7 @@ class LL1Parser:
                     if top == "Decl":
                         decl_flag = True
                 else:
-                    expected_list = [
-                        pretty_names.get(t, t) for t in (self.first[top] - {"ε"})
-                    ]
+                    expected_list = [pretty_names.get(t, t) for t in (self.first[top] - {"ε"})]
                     action_str = f"Error: Expected one of {expected_list}"
 
             trace_log.append(
@@ -330,9 +337,7 @@ class LL1Parser:
                 elif relop_val is not None and top in ("ID", "INT", "FLOAT"):
                     rhs_tok = (raw_kind, raw_val)
                     if relexpr_lhs is not None:
-                        self._check_bool_condition(
-                            relexpr_lhs, relop_val, rhs_tok, relexpr_line
-                        )
+                        self._check_bool_condition(relexpr_lhs, relop_val, rhs_tok, relexpr_line)
                     relop_val = None
                     relexpr_lhs = None
 
@@ -364,7 +369,7 @@ class LL1Parser:
         )
         sep_console = "-" * len(header_console)
 
-        print(f"\n--- LL(1) PARSE PREVIEW ---")
+        print("\n--- LL(1) PARSE PREVIEW ---")
         print(header_console + "\n" + sep_console)
         for entry in trace_log[:75]:
             c_stack = entry["stack"]
@@ -405,21 +410,17 @@ class LL1Parser:
                 )
                 for entry in trace_log:
                     f.write(file_format.format(**entry) + "\n")
-            print(
-                f"\n[Success] Parsing completed successfully in {len(trace_log)} steps."
-            )
+            print(f"\n[Success] Parsing completed successfully in {len(trace_log)} steps.")
             print(f"[Success] Full trace saved to traces/{output_file}\n")
         else:
             failed = trace_log[-1]
-            print(
-                f"\n[Fail] Syntax error at line {failed['line']} and column {failed['col']}."
-            )
+            print(f"\n[Fail] Syntax error at line {failed['line']} and column {failed['col']}.")
             print(
                 f"[Fail] Found '{failed['val']}' when the parser was at "
                 f"{failed['stack'].split(',')[-1].strip(' []')}."
             )
             print(f"[Fail] {failed['action']}")
-            print(f"[Fail] Parsing failed. No trace file was generated.")
+            print("[Fail] Parsing failed. No trace file was generated.")
 
         return success
 
