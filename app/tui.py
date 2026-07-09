@@ -175,6 +175,12 @@ class VisualizerApp(App):
         )
         self.query_one("#source_code", Static).update(syntax)
 
+        if line_num is not None:
+            source_widget = self.query_one("#source_code", Static)
+            viewport_height = source_widget.size.height or 15
+            target_y = max(0, line_num - (viewport_height // 2))
+            self.call_after_refresh(source_widget.scroll_to, y=target_y, animate=False)
+
         # Update console final output block
         final_lines = "\n".join(capture.final_output) if capture.final_output else ""
         self.query_one("#console_output", Static).update(
