@@ -37,45 +37,42 @@ class VisualizerApp(App):
 
     DEFAULT_CSS = """
     Screen {
-        layout: grid;
-        grid-size: 12 12;
+        background: #121212;
     }
     #sidebar {
-        grid-column: 1 / 4;
-        grid-row: 1 / 13;
+        width: 30;
+        height: 100%;
         background: #1e1e1e;
         border-right: tall #333333;
     }
     #main_container {
-        grid-column: 4 / 13;
-        grid-row: 1 / 13;
-        layout: grid;
-        grid-size: 12 12;
+        height: 100%;
     }
     #step_info {
-        grid-column: 1 / 13;
-        grid-row: 1 / 3;
+        height: 5;
         background: #1a1a1a;
         border: tall #007acc;
         content-align: center middle;
     }
+    #middle_container {
+        height: 1fr;
+    }
     #state_context {
-        grid-column: 1 / 7;
-        grid-row: 3 / 9;
+        width: 1fr;
+        height: 100%;
         background: #151515;
         border: tall #444444;
         overflow-y: auto;
     }
     #source_code {
-        grid-column: 7 / 13;
-        grid-row: 3 / 9;
+        width: 1fr;
+        height: 100%;
         background: #151515;
         border: tall #444444;
         overflow-y: auto;
     }
     #console_output {
-        grid-column: 1 / 13;
-        grid-row: 9 / 13;
+        height: 10;
         background: #121212;
         border: tall #00bcd4;
         overflow-y: auto;
@@ -103,15 +100,15 @@ class VisualizerApp(App):
 
         yield Header()
 
-        yield Container(ListView(*list_items, id="phase_list"), id="sidebar")
+        with Horizontal():
+            yield Container(ListView(*list_items, id="phase_list"), id="sidebar")
 
-        yield Container(
-            Static(id="step_info"),
-            Static(id="state_context"),
-            Static(id="source_code"),
-            Static(id="console_output"),
-            id="main_container",
-        )
+            with Vertical(id="main_container"):
+                yield Static(id="step_info")
+                with Horizontal(id="middle_container"):
+                    yield Static(id="state_context")
+                    yield Static(id="source_code")
+                yield Static(id="console_output")
 
         yield Footer()
 
