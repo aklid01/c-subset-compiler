@@ -15,6 +15,7 @@ if TYPE_CHECKING:
     from app.session import VizSession
     from compiler_core.frames import StepFrame
 
+from rich.console import Group
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
@@ -236,7 +237,11 @@ class VisualizerApp(App):
             if errors:
                 err_text = "\n".join([f"• {e}" for e in errors])
                 self.query_one("#state_context", Static).update(
-                    Vertical(table, Label("[bold red]Lexical Errors:[/bold red]"), Label(err_text))
+                    Group(
+                        table,
+                        Text("\nLexical Errors:\n", style="bold red"),
+                        Text(err_text),
+                    )
                 )
             else:
                 self.query_one("#state_context", Static).update(table)
@@ -306,9 +311,9 @@ class VisualizerApp(App):
             next_offset = context.get("next_offset", 0)
 
             self.query_one("#state_context", Static).update(
-                Vertical(
+                Group(
                     table,
-                    Label(f"\n[bold green]Next Offset Pointer:[/bold green] {next_offset} bytes"),
+                    Text(f"\nNext Offset Pointer: {next_offset} bytes", style="bold green"),
                 )
             )
 
@@ -349,8 +354,8 @@ class VisualizerApp(App):
                 style = "bold white on green" if is_active else ""
                 table.add_row(str(idx), q[0], q[1], q[2], q[3], style=style)
             self.query_one("#state_context", Static).update(
-                Vertical(
-                    Label(f"[bold green]Message:[/bold green] {detail.get('msg', '')}"),
+                Group(
+                    Text(f"Message: {detail.get('msg', '')}\n", style="bold green"),
                     table,
                 )
             )
@@ -371,8 +376,16 @@ class VisualizerApp(App):
 
             instrs_text = "\n".join(instructions[-15:])
 
+            layout_table = Table.grid(expand=True)
+            layout_table.add_column(ratio=1)
+            layout_table.add_column(ratio=1)
+            layout_table.add_row(
+                reg_table,
+                Panel(instrs_text, title="Emitted Code Stream (Recent)", border_style="dim"),
+            )
+
             self.query_one("#state_context", Static).update(
-                Vertical(
+                Group(
                     Panel(
                         f"[bold green]Quad under translation:[/bold green] {detail.get('quad')}\n"
                         f"[bold green]Emitted Code for Quad:[/bold green]\n"
@@ -380,11 +393,6 @@ class VisualizerApp(App):
                         title="Code Generator Details",
                         border_style="yellow",
                     ),
-                    Horizontal(
-                        reg_table,
-                        Panel(
-                            instrs_text, title="Emitted Code Stream (Recent)", border_style="dim"
-                        ),
-                    ),
+                    layout_table,
                 )
             )
