@@ -94,24 +94,31 @@ RelOp      -> LT | GT | LE | GE | EQ | NE
 ```text
 .
 |-- main.py
+|-- viz.py
 |-- code.txt
 |-- full_demo_output.txt
-|-- helper/
-|   |-- code_gen.py
-|   |-- optimizer.py
-|   `-- tac_manager.py
+|-- app/
+|   |-- session.py
+|   `-- tui.py
+|-- compiler_core/
+|   |-- frames.py
+|   |-- pipeline.py
+|   |-- helper/
+|   |   |-- code_gen.py
+|   |   |-- optimizer.py
+|   |   `-- tac_manager.py
+|   `-- src/
+|       |-- derivation.py
+|       |-- lexer.py
+|       |-- lr_parser.py
+|       |-- parser.py
+|       `-- symbol_table.py
 |-- input/
 |   `-- input.txt
 |-- output/
 |   |-- tac_output.txt
 |   |-- optimized_tac_output.txt
 |   `-- target_output.txt
-|-- src/
-|   |-- derivation.py
-|   |-- lexer.py
-|   |-- lr_parser.py
-|   |-- parser.py
-|   `-- symbol_table.py
 `-- traces/
     |-- ll1_trace.txt
     `-- slr_trace.txt
@@ -160,18 +167,34 @@ Custom input file:
 python main.py path/to/source_file.txt
 ```
 
+## Running the Visualizer
+
+The compiler includes an interactive Textual TUI dashboard for step-by-step state visualization of all compilation stages.
+
+```bash
+python viz.py [path/to/source_file.txt]
+```
+
+### Key Bindings
+- `Right` or `N`: Advance to the next step frame.
+- `Left` or `P`: Go back to the previous step frame.
+- `Home`: Jump to the first step of the current phase.
+- `End`: Jump to the last step of the current phase.
+- `Q`: Quit the visualizer application.
+- `Tab` / `Shift+Tab`: Shift focus between panel widgets.
+
 ## Compilation Pipeline
 
 `main.py` runs stages in this order:
 
 1. Read source program text.
-2. Lexical analysis (`src/lexer.py`).
-3. LL(1) parsing and semantic checks (`src/parser.py`).
-4. SLR(1) parsing and semantic checks (`src/lr_parser.py`).
+2. Lexical analysis (`compiler_core/src/lexer.py`).
+3. LL(1) parsing and semantic checks (`compiler_core/src/parser.py`).
+4. SLR(1) parsing and semantic checks (`compiler_core/src/lr_parser.py`).
 5. Symbol table reports for both parser passes.
 6. TAC generation and display.
-7. Optimization passes (`helper/optimizer.py`).
-8. Pseudo-assembly generation (`helper/code_gen.py`).
+7. Optimization passes (`compiler_core/helper/optimizer.py`).
+8. Pseudo-assembly generation (`compiler_core/helper/code_gen.py`).
 9. Write outputs to files in `output/`.
 
 If lexical or semantic errors are found, later phases are skipped appropriately.
