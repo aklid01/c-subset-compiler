@@ -1,0 +1,61 @@
+TARGET CODE  (Pseudo-Assembly)
+==============================================================
+    LOAD   R0, 14
+    STORE  R0, a
+    LOAD   R1, 15
+    STORE  R1, b
+    LOAD   R2, 0
+    STORE  R2, sum
+L1:
+    SLT    R3, R0, R1
+    LOAD   R4, 0
+    SNE    R5, R1, R4
+    AND    R6, R3, R5
+    JZ     R6, L4
+    LOAD   R7, 2
+    MUL    R2, R0, R7
+    MOV    R1, R2
+    LOAD   R4, 3
+    MOD    R3, R1, R4
+    LOAD   R5, 0
+    SEQ    R6, R3, R5
+    LOAD   R7, 5
+    SGT    R2, R0, R7
+    STORE  R1, temp
+    OR     R1, R6, R2
+    JZ     R1, L2
+    LOAD   R4, sum
+    LOAD   R3, temp
+    ADD    R5, R4, R3
+    MOV    R4, R5
+    STORE  R4, sum
+    JMP    L3
+L2:
+    LOAD   R0, 1
+    SUB    R7, R4, R0
+    MOV    R4, R7
+    STORE  R4, sum
+L3:
+    LOAD   R6, a
+    LOAD   R2, 1
+    ADD    R1, R6, R2
+    MOV    R6, R1
+    STORE  R6, a
+    JMP    L1
+L4:
+    LOAD   R3, b
+    SUB    R5, R3, R6
+    DIV    R0, R4, R5
+    MOV    R7, R0
+    STORE  R7, avg
+    LOAD   R2, 5.0
+    SLT    R1, R7, R2
+    NOT    R3, R1
+    JZ     R3, L5
+    PRINT  R4
+    JMP    L6
+L5:
+    PRINT  R7
+L6:
+==============================================================
+Total instructions : 57

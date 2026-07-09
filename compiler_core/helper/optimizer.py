@@ -1,0 +1,397 @@
+"""
+Optimizer module for the C-subset compiler.
+Provides constant folding, constant propagation, and dead code elimination (DCE)
+passes to optimize generated Three-Address Code (TAC).
+"""
+
+from __future__ import annotations
+
+import copy
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from compiler_core.frames import PhaseCapture
+
+_ARITH_OPS = {"+", "-", "*", "/", "%"}
+_RELOP_OPS = {"<", ">", "<=", ">=", "==", "!="}
+_ALL_OPS = _ARITH_OPS | _RELOP_OPS
+_ALWAYS_KEEP = {"LABEL", "GOTO", "IF_FALSE", "IF_TRUE", "PRINT"}
+
+
+def _is_const(val):
+    try:
+        float(str(val))
+        return True
+    except (TypeError, ValueError):
+        return False
+
+
+def _as_num(val):
+    s = str(val)
+    return float(s) if "." in s else int(s)
+
+
+def _fmt(val):
+    if isinstance(val, float) and val == int(val):
+        return str(int(val))
+    return str(val)
+
+
+def _eval_arith(op, a, b):
+    if op == "+":
+        return a + b
+    if op == "-":
+        return a - b
+    if op == "*":
+        return a * b
+    if op == "/":
+        if b == 0:
+            return None
+        return a / b if isinstance(a, float) or isinstance(b, float) else a // b
+    if op == "%":
+        if b == 0:
+            return None
+        return a % b
+    return None
+
+
+def _eval_relop(op, a, b):
+    if op == "<":
+        return int(a < b)
+    if op == ">":
+        return int(a > b)
+    if op == "<=":
+        return int(a <= b)
+    if op == ">=":
+        return int(a >= b)
+    if op == "==":
+        return int(a == b)
+    if op == "!=":
+        return int(a != b)
+    return None
+
+
+def constant_folding(quads: list[list[str]]) -> tuple[list[list[str]], list[str]]:
+    """Fold arithmetic operations on numeric constants into a single constant assignment."""
+    quads = copy.deepcopy(quads)
+    log = []
+    for i, q in enumerate(quads):
+        op, arg1, arg2, res = q
+        if op in _ARITH_OPS and _is_const(arg1) and _is_const(arg2):
+            val = _eval_arith(op, _as_num(arg1), _as_num(arg2))
+            if val is not None:
+                log.append(f"  [{i:>3}] {arg1} {op} {arg2}  →  {_fmt(val)}")
+                quads[i] = ["=", _fmt(val), "-", res]
+        elif op in _RELOP_OPS and _is_const(arg1) and _is_const(arg2):
+            val = _eval_relop(op, _as_num(arg1), _as_num(arg2))
+            if val is not None:
+                log.append(f"  [{i:>3}] {arg1} {op} {arg2}  →  {val}")
+                quads[i] = ["=", str(val), "-", res]
+    return quads, log
+
+
+def constant_propagation(quads: list[list[str]]) -> tuple[list[list[str]], list[str]]:
+    """Propagate constant values into subsequent uses until re-assignment or jump labels."""
+    quads = copy.deepcopy(quads)
+    log = []
+    const_map = {}
+
+    jump_targets = set()
+    for q in quads:
+        if q[0] in ("IF_FALSE", "IF_TRUE", "GOTO"):
+            jump_targets.add(str(q[3]))
+
+    for i, q in enumerate(quads):
+        op, arg1, arg2, res = q
+
+        if op == "LABEL" and str(res) in jump_targets:
+            const_map.clear()
+            continue
+
+        new_arg1, new_arg2 = str(arg1), str(arg2)
+        if op not in _ALWAYS_KEEP:
+            if str(arg1) in const_map:
+                new_arg1 = const_map[str(arg1)]
+                log.append(f"  [{i:>3}] replaced '{arg1}' with '{new_arg1}' in arg1")
+                quads[i][1] = new_arg1
+            if str(arg2) in const_map and str(arg2) != "-":
+                new_arg2 = const_map[str(arg2)]
+                log.append(f"  [{i:>3}] replaced '{arg2}' with '{new_arg2}' in arg2")
+                quads[i][2] = new_arg2
+
+        if op == "=" and _is_const(quads[i][1]) and str(res) not in ("-", "PENDING"):
+            const_map[str(res)] = str(quads[i][1])
+        elif str(res) not in ("-", "PENDING", "") and op not in _ALWAYS_KEEP:
+            const_map.pop(str(res), None)
+
+    return quads, log
+
+
+def dead_code_elimination(quads: list[list[str]]) -> tuple[list[list[str]], list[str]]:
+    """Remove unused temporary variable definitions that do not affect program output."""
+    quads = copy.deepcopy(quads)
+    log = []
+
+    def _uses(q):
+        op, arg1, arg2, res = q
+        used = set()
+        if op == "IF_FALSE" or op == "IF_TRUE":
+            used.add(str(arg1))
+        elif op == "PRINT":
+            used.add(str(arg1))
+        elif op not in _ALWAYS_KEEP:
+            if str(arg1) != "-":
+                used.add(str(arg1))
+            if str(arg2) != "-":
+                used.add(str(arg2))
+        return used
+
+    def _def(q):
+        op, arg1, arg2, res = q
+        if op in _ALWAYS_KEEP:
+            return None
+        r = str(res)
+        return r if r not in ("-", "PENDING", "") else None
+
+    changed = True
+    while changed:
+        changed = False
+        all_used = set()
+        for q in quads:
+            all_used |= _uses(q)
+        new_quads = []
+        for i, q in enumerate(quads):
+            d = _def(q)
+            if d and d.startswith("t") and d not in all_used and q[0] not in _ALWAYS_KEEP:
+                log.append(f"  [{i:>3}] removed dead: '{d}' = {q[0]} {q[1]} {q[2]}")
+                changed = True
+            else:
+                new_quads.append(q)
+        quads = new_quads
+
+    return quads, log
+
+
+def optimize(quads: list[list[str]]) -> tuple[list[list[str]], str]:
+    """Optimize Three-Address Code by executing folding, propagation,
+    and dead code elimination passes.
+    """
+    width = 62
+    lines = []
+    lines.append("\n" + "═" * width)
+    lines.append(" OPTIMIZATION REPORT ".center(width, "═"))
+    lines.append("═" * width)
+    lines.append(f"  Original quad count : {len(quads)}")
+    lines.append("─" * width)
+
+    current_quads = copy.deepcopy(quads)
+
+    # Pass 1 – Folding and Propagation
+    next_quads, fold_log1 = constant_folding(current_quads)
+    current_quads, prop_log1 = constant_propagation(next_quads)
+
+    # Pass 2 (repeat) – Folding and Propagation
+    next_quads, fold_log2 = constant_folding(current_quads)
+    current_quads, prop_log2 = constant_propagation(next_quads)
+
+    lines.append("\n  Pass 1 – Constant Folding")
+    lines.append("  " + "─" * (width - 2))
+    lines += fold_log1 if fold_log1 else ["  (nothing to fold)"]
+
+    lines.append("\n  Pass 2 – Constant Propagation")
+    lines.append("  " + "─" * (width - 2))
+    lines += prop_log1 if prop_log1 else ["  (nothing to propagate)"]
+
+    lines.append("\n  Pass 1 (repeat) – Constant Folding on propagated values")
+    lines.append("  " + "─" * (width - 2))
+    lines += fold_log2 if fold_log2 else ["  (nothing new to fold)"]
+
+    lines.append("\n  Pass 2 (repeat) – Constant Propagation")
+    lines.append("  " + "─" * (width - 2))
+    lines += prop_log2 if prop_log2 else ["  (nothing new to propagate)"]
+
+    lines.append("\n  Pass 3 – Dead Code Elimination")
+    lines.append("  " + "─" * (width - 2))
+    final_quads, dce_log = dead_code_elimination(current_quads)
+    lines += dce_log if dce_log else ["  (no dead code found)"]
+
+    removed = len(quads) - len(final_quads)
+    lines.append("\n" + "─" * width)
+    lines.append(f"  Optimized quad count : {len(final_quads)}  (removed {removed})")
+    lines.append("═" * width + "\n")
+
+    return final_quads, "\n".join(lines)
+
+
+def optimize_capture(quads: list[list[str]]) -> "PhaseCapture":
+    """Optimize Three-Address Code and return PhaseCapture with step-by-step StepFrames."""
+    from compiler_core.frames import PhaseCapture, StepFrame
+
+    frames = []
+    current_quads = copy.deepcopy(quads)
+    pass_index = 1
+
+    for pass_index in (1, 2):
+        # Constant Folding step-by-step
+        folded_quads = copy.deepcopy(current_quads)
+        for i, q in enumerate(folded_quads):
+            op, arg1, arg2, res = q
+            if op in _ARITH_OPS and _is_const(arg1) and _is_const(arg2):
+                val = _eval_arith(op, _as_num(arg1), _as_num(arg2))
+                if val is not None:
+                    before = list(folded_quads[i])
+                    folded_quads[i] = ["=", _fmt(val), "-", res]
+                    frames.append(
+                        StepFrame(
+                            phase="optimizer",
+                            index=len(frames),
+                            title=f"Constant Folding (Pass {pass_index})",
+                            detail={
+                                "msg": f"Folded {arg1} {op} {arg2} to {_fmt(val)} at index {i}",
+                                "before": before,
+                                "after": list(folded_quads[i]),
+                                "index": i,
+                            },
+                            context={"quads": copy.deepcopy(folded_quads)},
+                        )
+                    )
+            elif op in _RELOP_OPS and _is_const(arg1) and _is_const(arg2):
+                val = _eval_relop(op, _as_num(arg1), _as_num(arg2))
+                if val is not None:
+                    before = list(folded_quads[i])
+                    folded_quads[i] = ["=", str(val), "-", res]
+                    frames.append(
+                        StepFrame(
+                            phase="optimizer",
+                            index=len(frames),
+                            title=f"Constant Folding (Pass {pass_index})",
+                            detail={
+                                "msg": f"Folded {arg1} {op} {arg2} to {val} at index {i}",
+                                "before": before,
+                                "after": list(folded_quads[i]),
+                                "index": i,
+                            },
+                            context={"quads": copy.deepcopy(folded_quads)},
+                        )
+                    )
+
+        # Constant Propagation step-by-step
+        propagated_quads = copy.deepcopy(folded_quads)
+        const_map = {}
+        jump_targets = {
+            str(q[3]) for q in propagated_quads if q[0] in ("IF_FALSE", "IF_TRUE", "GOTO")
+        }
+
+        for i, q in enumerate(propagated_quads):
+            op, arg1, arg2, res = q
+            if op == "LABEL" and str(res) in jump_targets:
+                const_map.clear()
+                continue
+
+            new_arg1, new_arg2 = str(arg1), str(arg2)
+            before = list(propagated_quads[i])
+            if op not in _ALWAYS_KEEP:
+                if str(arg1) in const_map:
+                    new_arg1 = const_map[str(arg1)]
+                    propagated_quads[i][1] = new_arg1
+                    frames.append(
+                        StepFrame(
+                            phase="optimizer",
+                            index=len(frames),
+                            title=f"Constant Propagation (Pass {pass_index})",
+                            detail={
+                                "msg": f"Propagated constant '{new_arg1}' to arg1 at index {i}",
+                                "before": before,
+                                "after": list(propagated_quads[i]),
+                                "index": i,
+                            },
+                            context={"quads": copy.deepcopy(propagated_quads)},
+                        )
+                    )
+                    before = list(propagated_quads[i])
+                if str(arg2) in const_map and str(arg2) != "-":
+                    new_arg2 = const_map[str(arg2)]
+                    propagated_quads[i][2] = new_arg2
+                    frames.append(
+                        StepFrame(
+                            phase="optimizer",
+                            index=len(frames),
+                            title=f"Constant Propagation (Pass {pass_index})",
+                            detail={
+                                "msg": f"Propagated constant '{new_arg2}' to arg2 at index {i}",
+                                "before": before,
+                                "after": list(propagated_quads[i]),
+                                "index": i,
+                            },
+                            context={"quads": copy.deepcopy(propagated_quads)},
+                        )
+                    )
+
+            if op == "=" and _is_const(propagated_quads[i][1]) and str(res) not in ("-", "PENDING"):
+                const_map[str(res)] = str(propagated_quads[i][1])
+            elif str(res) not in ("-", "PENDING", "") and op not in _ALWAYS_KEEP:
+                const_map.pop(str(res), None)
+
+        current_quads = propagated_quads
+
+    # Dead Code Elimination step-by-step
+    dce_quads = copy.deepcopy(current_quads)
+
+    def _uses(q):
+        op, arg1, arg2, res = q
+        used = set()
+        if op == "IF_FALSE" or op == "IF_TRUE":
+            used.add(str(arg1))
+        elif op == "PRINT":
+            used.add(str(arg1))
+        elif op not in _ALWAYS_KEEP:
+            if str(arg1) != "-":
+                used.add(str(arg1))
+            if str(arg2) != "-":
+                used.add(str(arg2))
+        return used
+
+    def _def(q):
+        op, arg1, arg2, res = q
+        if op in _ALWAYS_KEEP:
+            return None
+        r = str(res)
+        return r if r not in ("-", "PENDING", "") else None
+
+    changed = True
+    while changed:
+        changed = False
+        all_used = set()
+        for q in dce_quads:
+            all_used |= _uses(q)
+
+        new_quads = []
+        for i, q in enumerate(dce_quads):
+            d = _def(q)
+            if d and d.startswith("t") and d not in all_used and q[0] not in _ALWAYS_KEEP:
+                changed = True
+                frames.append(
+                    StepFrame(
+                        phase="optimizer",
+                        index=len(frames),
+                        title="Dead Code Elimination",
+                        detail={
+                            "msg": f"Removed dead definition of temporary '{d}' at index {i}",
+                            "before": list(q),
+                            "after": None,
+                            "index": i,
+                        },
+                        context={"quads": copy.deepcopy(new_quads + dce_quads[i + 1 :])},
+                    )
+                )
+            else:
+                new_quads.append(q)
+        dce_quads = new_quads
+
+    opt_quads, report = optimize(quads)
+    return PhaseCapture(
+        name="optimizer",
+        frames=frames,
+        success=True,
+        final_output=report.splitlines(),
+    )

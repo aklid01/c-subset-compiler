@@ -1,9 +1,39 @@
-import pandas as pd
-from src.symbol_table import SymbolTable
+"""
+Parser module for the C-subset compiler.
+Implements an LL(1) recursive descent / table-driven parser
+with first/follow set generation and semantic type checks.
+This is the second stage in the compiler pipeline.
+"""
+
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from compiler_core.frames import PhaseCapture
+
+
+from compiler_core.src.constants import CONSOLE_TRACE_LIMIT, RELOPS, REPORT_WIDTH
+from compiler_core.src.semantics import check_bool_condition
+from compiler_core.src.symbol_table import SymbolTable
+from compiler_core.src.tokens import PRETTY_NAMES, Token
+
+
+@dataclass
+class _LL1SemanticState:
+    decl_flag: bool = False
+    decl_type: str | None = None
+    assign_lhs_var: str | None = None
+    expect_rhs_tok: bool = False
+    relop_val: str | None = None
+    relexpr_lhs: tuple[str, str] | None = None
+    relexpr_line: int | None = None
 
 
 class LL1Parser:
-    def __init__(self, tokens):
+    def __init__(self, tokens: list[Token]):
         self.tokens = tokens
         self.symbol_table = SymbolTable()
         self.pos = 0
@@ -163,70 +193,19 @@ class LL1Parser:
             res.add("ε")
         return res
 
-    def _resolve_type(self, tok_kind, tok_val):
-
-        if tok_kind == "FLOAT":
-            return "float"
-        if tok_kind == "INT":
-            return "int"
-        if tok_kind == "ID":
-            sym = self.symbol_table.lookup(tok_val)
-            return sym.data_type if sym else None
-        return None
-
-    def _check_bool_condition(self, lhs_tok, relop_val, rhs_tok, line):
-
-        if relop_val not in ("==", "!="):
-            return
-        lhs_type = self._resolve_type(*lhs_tok)
-        rhs_type = self._resolve_type(*rhs_tok)
-        if lhs_type == "float" or rhs_type == "float":
-            self.semantic_errors.append(
-                f"[Error] Invalid Boolean Condition at line {line}: "
-                f"operator '{relop_val}' cannot be used with float operands "
-                f"('{lhs_tok[1]}' {relop_val} '{rhs_tok[1]}'). "
-                f"Use '<', '>', '<=', '>=' for float comparisons."
-            )
-
-    def parse(self, output_file="ll1_trace.txt"):
-        pretty_names = {
-            "SEMI": ";",
-            "LPAREN": "(",
-            "RPAREN": ")",
-            "LBRACE": "{",
-            "RBRACE": "}",
-            "ASSIGN": "=",
-            "PLUS": "+",
-            "MINUS": "-",
-            "MULT": "*",
-            "DIV": "/",
-            "MOD": "%",
-            "INT": "integer",
-            "FLOAT": "float",
-            "ID": "identifier",
-            "$": "end of file",
-        }
-
+    def _run_parse_loop(self, capture_list: list = None) -> tuple[bool, list[dict]]:
         stack = ["$", "Program"]
         trace_log = []
         step = 0
         success = False
 
-        decl_flag = False
-        decl_type = None
-
-        assign_lhs_var = None
-        expect_rhs_tok = False
-
-        relop_val = None
-        relexpr_lhs = None
-        relexpr_line = None
+        state = _LL1SemanticState()
 
         while stack:
             step += 1
             top = stack.pop()
             token = self.tokens[self.pos]
-            raw_kind, raw_val, line, col = token
+            raw_kind, raw_val, line, col = token.kind, token.value, token.line, token.col
             curr_kind = "$" if raw_kind == "EOF" else raw_kind
 
             if top == "LBRACE" and curr_kind == "LBRACE":
@@ -247,18 +226,16 @@ class LL1Parser:
                 if top == curr_kind:
                     action_str = f"Match {raw_kind}"
                 else:
-                    expected_char = pretty_names.get(top, top)
+                    expected_char = PRETTY_NAMES.get(top, top)
                     action_str = f"Error: Missing '{expected_char}'"
             else:
                 prod = self.table.get((top, curr_kind))
                 if prod:
                     action_str = f"Apply {top} -> {' '.join(prod)}"
                     if top == "Decl":
-                        decl_flag = True
+                        state.decl_flag = True
                 else:
-                    expected_list = [
-                        pretty_names.get(t, t) for t in (self.first[top] - {"ε"})
-                    ]
+                    expected_list = [PRETTY_NAMES.get(t, t) for t in (self.first[top] - {"ε"})]
                     action_str = f"Error: Expected one of {expected_list}"
 
             trace_log.append(
@@ -273,23 +250,48 @@ class LL1Parser:
                 }
             )
 
+            if capture_list is not None:
+                from compiler_core.frames import StepFrame
+
+                sym_table_snap = [
+                    {
+                        "name": sym.name,
+                        "type": sym.data_type,
+                        "scope": sym.scope_level,
+                        "offset": sym.offset,
+                    }
+                    for name, sym in self.symbol_table.history
+                ]
+                capture_list.append(
+                    StepFrame(
+                        phase="ll1_parser",
+                        index=len(capture_list),
+                        title=f"Step {step}: {action_str}",
+                        detail=trace_log[-1],
+                        context={
+                            "symbol_table": sym_table_snap,
+                            "semantic_errors": list(self.semantic_errors),
+                        },
+                    )
+                )
+
             if "Error" in action_str or success:
                 break
 
             if top in self.terminals:
-                if decl_flag and top in ("INT", "FLOAT"):
-                    decl_type = raw_val
+                if state.decl_flag and top in ("INT", "FLOAT"):
+                    state.decl_type = raw_val
 
-                if top == "ID" and decl_flag:
-                    ok = self.symbol_table.insert(raw_val, decl_type)
+                if top == "ID" and state.decl_flag:
+                    ok = self.symbol_table.insert(raw_val, state.decl_type)
                     if not ok:
                         self.semantic_errors.append(
                             f"[Error] Multiple Declaration: Variable '{raw_val}' "
                             f"at line {line}, column {col} is already declared "
                             f"in this scope."
                         )
-                    decl_flag = False
-                    decl_type = None
+                    state.decl_flag = False
+                    state.decl_type = None
 
                 elif top == "ID":
                     sym = self.symbol_table.lookup(raw_val)
@@ -299,42 +301,46 @@ class LL1Parser:
                             f"line {line}, column {col} without prior declaration."
                         )
 
-                if top == "ID" and not decl_flag:
-                    assign_lhs_var = raw_val
+                if top == "ID" and not state.decl_flag:
+                    state.assign_lhs_var = raw_val
 
-                if top == "ASSIGN" and not decl_flag:
-                    expect_rhs_tok = True
+                if top == "ASSIGN" and not state.decl_flag:
+                    state.expect_rhs_tok = True
 
-                elif expect_rhs_tok and top in ("INT", "FLOAT", "ID", "LPAREN"):
-                    if raw_kind == "FLOAT" and assign_lhs_var:
-                        sym = self.symbol_table.lookup(assign_lhs_var)
+                elif state.expect_rhs_tok and top in ("INT", "FLOAT", "ID", "LPAREN"):
+                    if raw_kind == "FLOAT" and state.assign_lhs_var:
+                        sym = self.symbol_table.lookup(state.assign_lhs_var)
                         if sym and sym.data_type == "int":
                             self.semantic_errors.append(
                                 f"[Error] Type Mismatch at line {line}: cannot "
                                 f"assign float literal '{raw_val}' to int "
-                                f"variable '{assign_lhs_var}'."
+                                f"variable '{state.assign_lhs_var}'."
                             )
-                    expect_rhs_tok = False
-                    assign_lhs_var = None
+                    state.expect_rhs_tok = False
+                    state.assign_lhs_var = None
 
-                RELOPS = {"LT", "GT", "LE", "GE", "EQ", "NE"}
                 if top in RELOPS:
-                    relop_val = raw_val
-                    relexpr_line = line
+                    state.relop_val = raw_val
+                    state.relexpr_line = line
                     if self.pos >= 1:
                         prev = self.tokens[self.pos - 1]
-                        relexpr_lhs = (prev[0], prev[1])
+                        state.relexpr_lhs = (prev.kind, prev.value)
                     else:
-                        relexpr_lhs = None
+                        state.relexpr_lhs = None
 
-                elif relop_val is not None and top in ("ID", "INT", "FLOAT"):
+                elif state.relop_val is not None and top in ("ID", "INT", "FLOAT"):
                     rhs_tok = (raw_kind, raw_val)
-                    if relexpr_lhs is not None:
-                        self._check_bool_condition(
-                            relexpr_lhs, relop_val, rhs_tok, relexpr_line
+                    if state.relexpr_lhs is not None:
+                        check_bool_condition(
+                            self.symbol_table,
+                            self.semantic_errors,
+                            state.relexpr_lhs,
+                            state.relop_val,
+                            rhs_tok,
+                            state.relexpr_line,
                         )
-                    relop_val = None
-                    relexpr_lhs = None
+                    state.relop_val = None
+                    state.relexpr_lhs = None
 
                 self.pos += 1
             else:
@@ -343,6 +349,11 @@ class LL1Parser:
                     for symbol in reversed(prod):
                         stack.append(symbol)
 
+        return success, trace_log
+
+    def _render_console(self, trace_log: list[dict]) -> None:
+        if not trace_log:
+            return
         max_step_w = max(len(d["step"]) for d in trace_log)
         max_stack_w = max(len(d["stack"]) for d in trace_log)
         max_look_w = max(len(d["lookahead"]) for d in trace_log)
@@ -364,9 +375,9 @@ class LL1Parser:
         )
         sep_console = "-" * len(header_console)
 
-        print(f"\n--- LL(1) PARSE PREVIEW ---")
+        print("\n--- LL(1) PARSE PREVIEW ---")
         print(header_console + "\n" + sep_console)
-        for entry in trace_log[:75]:
+        for entry in trace_log[:CONSOLE_TRACE_LIMIT]:
             c_stack = entry["stack"]
             if len(c_stack) > console_stack_w:
                 c_stack = "..." + c_stack[-(console_stack_w - 3) :]
@@ -378,57 +389,97 @@ class LL1Parser:
                     action=entry["action"],
                 )
             )
-        if len(trace_log) > 75:
-            print(f"... (Remaining {len(trace_log)-75} steps processed) ...")
+        if len(trace_log) > CONSOLE_TRACE_LIMIT:
+            print(f"... (Remaining {len(trace_log)-CONSOLE_TRACE_LIMIT} steps processed) ...")
 
+    def _write_trace(self, trace_log: list[dict], output_file: str) -> None:
+        if not trace_log:
+            return
+        max_step_w = max(len(d["step"]) for d in trace_log)
+        max_stack_w = max(len(d["stack"]) for d in trace_log)
+        max_look_w = max(len(d["lookahead"]) for d in trace_log)
+        max_step_w = max(max_step_w, len("STEP"))
+        max_look_w = max(max_look_w, len("LOOKAHEAD"))
+        header_stack_label = "STACK (Top on Right)"
+        actual_stack_w = max(max_stack_w, len(header_stack_label))
+
+        file_format = (
+            f"{{step:<{max_step_w}}} | {{stack:<{actual_stack_w}}} "
+            f"| {{lookahead:<{max_look_w}}} | {{action}}"
+        )
+        header_file = file_format.format(
+            step="STEP",
+            stack=header_stack_label,
+            lookahead="LOOKAHEAD",
+            action="ACTION",
+        )
+        sep_file = "-" * len(header_file)
+        os.makedirs("./traces", exist_ok=True)
+        with open(f"./traces/{output_file}", "w", encoding="utf-8") as f:
+            f.write(
+                "LL(1) SUCCESSFUL PARSE TRACE\n"
+                + sep_file
+                + "\n"
+                + header_file
+                + "\n"
+                + sep_file
+                + "\n"
+            )
+            for entry in trace_log:
+                f.write(file_format.format(**entry) + "\n")
+        print(f"\n[Success] Parsing completed successfully in {len(trace_log)} steps.")
+        print(f"[Success] Full trace saved to traces/{output_file}\n")
+
+    def parse(self, output_file: str = "ll1_trace.txt") -> bool:
+        """Parse the token stream using the LL(1) parsing table and perform semantic analysis."""
+        success, trace_log = self._run_parse_loop()
+        self._render_console(trace_log)
         if success:
-            file_format = (
-                f"{{step:<{max_step_w}}} | {{stack:<{actual_stack_w}}} "
-                f"| {{lookahead:<{max_look_w}}} | {{action}}"
-            )
-            header_file = file_format.format(
-                step="STEP",
-                stack=header_stack_label,
-                lookahead="LOOKAHEAD",
-                action="ACTION",
-            )
-            sep_file = "-" * len(header_file)
-            with open(f"./traces/{output_file}", "w", encoding="utf-8") as f:
-                f.write(
-                    "LL(1) SUCCESSFUL PARSE TRACE\n"
-                    + sep_file
-                    + "\n"
-                    + header_file
-                    + "\n"
-                    + sep_file
-                    + "\n"
-                )
-                for entry in trace_log:
-                    f.write(file_format.format(**entry) + "\n")
-            print(
-                f"\n[Success] Parsing completed successfully in {len(trace_log)} steps."
-            )
-            print(f"[Success] Full trace saved to traces/{output_file}\n")
+            self._write_trace(trace_log, output_file)
         else:
             failed = trace_log[-1]
-            print(
-                f"\n[Fail] Syntax error at line {failed['line']} and column {failed['col']}."
-            )
+            print(f"\n[Fail] Syntax error at line {failed['line']} and column {failed['col']}.")
             print(
                 f"[Fail] Found '{failed['val']}' when the parser was at "
                 f"{failed['stack'].split(',')[-1].strip(' []')}."
             )
             print(f"[Fail] {failed['action']}")
-            print(f"[Fail] Parsing failed. No trace file was generated.")
-
+            print("[Fail] Parsing failed. No trace file was generated.")
         return success
+
+    def parse_capture(self) -> "PhaseCapture":
+        """Parse token stream and return PhaseCapture containing StepFrames for LL(1) parsing."""
+        from compiler_core.frames import PhaseCapture
+
+        frames = []
+        success, _ = self._run_parse_loop(capture_list=frames)
+        final_output = []
+        final_output.append("FIRST SETS:")
+        for k, v in self.first.items():
+            final_output.append(f"  {k:15}: {v}")
+        final_output.append("\nFOLLOW SETS:")
+        for k, v in self.follow.items():
+            final_output.append(f"  {k:15}: {v}")
+
+        final_output.append(
+            f"\n[Success] LL(1) Parsing completed successfully in {len(frames)} steps."
+        )
+        if self.semantic_errors:
+            final_output.append(f"\nTotal errors found: {len(self.semantic_errors)}")
+            for err in self.semantic_errors:
+                final_output.append(f"  {err}")
+        else:
+            final_output.append("\nNo semantic errors detected.")
+        return PhaseCapture(
+            name="ll1_parser", frames=frames, success=success, final_output=final_output
+        )
 
     def print_semantic_errors(self):
 
         if not self.semantic_errors:
             print("\n[Info] LL(1): No semantic errors detected.\n")
             return
-        width = 62
+        width = REPORT_WIDTH
         print("\n" + "═" * width)
         print(" LL(1) SEMANTIC ERRORS ".center(width, "═"))
         print("═" * width)
@@ -438,15 +489,42 @@ class LL1Parser:
 
     def display_parsing_table(self):
         print("\n--- LL(1) PARSING TABLE ---")
-        data = {}
+        active_cols = []
+        for t in self.terminals:
+            has_prod = False
+            for nt in self.non_terminals:
+                if self.table.get((nt, t)):
+                    has_prod = True
+                    break
+            if has_prod:
+                active_cols.append(t)
+
+        if not active_cols:
+            print("No parsing table entries.")
+            return
+
+        col_widths = {t: len(t) for t in active_cols}
+        row_label_width = max(len(nt) for nt in self.non_terminals)
+
         for nt in self.non_terminals:
-            data[nt] = {}
-            for t in self.terminals:
+            for t in active_cols:
                 prod = self.table.get((nt, t))
-                data[nt][t] = " ".join(prod) if prod else "-"
-        df = pd.DataFrame.from_dict(data, orient="index")
-        df = df.loc[:, (df != "-").any(axis=0)]
-        print(df.to_string())
+                prod_str = " ".join(prod) if prod else "-"
+                col_widths[t] = max(col_widths[t], len(prod_str))
+
+        header = f"{'':<{row_label_width}}  " + "  ".join(
+            f"{t:<{col_widths[t]}}" for t in active_cols
+        )
+        print(header)
+        print("-" * len(header))
+
+        for nt in self.non_terminals:
+            row_parts = []
+            for t in active_cols:
+                prod = self.table.get((nt, t))
+                prod_str = " ".join(prod) if prod else "-"
+                row_parts.append(f"{prod_str:<{col_widths[t]}}")
+            print(f"{nt:<{row_label_width}}  " + "  ".join(row_parts))
 
     def display_sets(self):
         print("\n--- FIRST SETS ---")

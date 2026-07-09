@@ -1,6 +1,19 @@
-import os
+"""
+Target Code Generator module for the C-subset compiler.
+Generates pseudo-assembly target code from optimized Three-Address Code (TAC),
+performing liveness analysis and register allocation.
+"""
 
-NUM_REGS = 8
+from __future__ import annotations
+
+import os
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from compiler_core.frames import PhaseCapture
+
+from compiler_core.src.constants import NUM_REGS
+
 _ARITH_MAP = {"+": "ADD", "-": "SUB", "*": "MUL", "/": "DIV", "%": "MOD"}
 _RELOP_MAP = {
     "<": "SLT",
@@ -120,23 +133,27 @@ class RegisterAllocator:
     def mark_stored(self, name):
         self._name_locs.setdefault(name, set()).add("mem")
 
+    def get_operand(self, val: str, instrs: list[str], live_names: set[str], idx: int) -> str:
+        """Get register containing operand value, loading/allocating as needed."""
+        if _is_imm(val):
+            reg = self.alloc_result(f"__imm_{idx}_{val}", instrs, live_names)
+            instrs.append(f"    LOAD   {reg}, {val}")
+            return reg
+        else:
+            return self.load(val, instrs, live_names)
 
-def generate(quads):
+
+def _generate_engine(quads: list[list[str]], capture: bool = False):
     live_after = _compute_liveness(quads)
     ra = RegisterAllocator()
     instrs = []
+    frames = []
 
     for idx, q in enumerate(quads):
         op, arg1, arg2, res = [str(x) for x in q]
         live = live_after[idx]
 
-        def get_operand(val):
-            if _is_imm(val):
-                reg = ra.alloc_result(f"__imm_{idx}_{val}", instrs, live)
-                instrs.append(f"    LOAD   {reg}, {val}")
-                return reg
-            else:
-                return ra.load(val, instrs, live)
+        start_instr_idx = len(instrs)
 
         if op == "LABEL":
             instrs.append(f"{res}:")
@@ -159,14 +176,14 @@ def generate(quads):
                 ra.mark_stored(res)
 
         elif op in _ARITH_MAP:
-            ra_r = get_operand(arg1)
-            rb_r = get_operand(arg2)
+            ra_r = ra.get_operand(arg1, instrs, live, idx)
+            rb_r = ra.get_operand(arg2, instrs, live, idx)
             rd = ra.alloc_result(res, instrs, live)
             instrs.append(f"    {_ARITH_MAP[op]:<6} {rd}, {ra_r}, {rb_r}")
 
         elif op in _RELOP_MAP:
-            ra_r = get_operand(arg1)
-            rb_r = get_operand(arg2)
+            ra_r = ra.get_operand(arg1, instrs, live, idx)
+            rb_r = ra.get_operand(arg2, instrs, live, idx)
             rd = ra.alloc_result(res, instrs, live)
             instrs.append(f"    {_RELOP_MAP[op]:<6} {rd}, {ra_r}, {rb_r}")
 
@@ -191,10 +208,39 @@ def generate(quads):
             rs = ra.load(arg1, instrs, live)
             instrs.append(f"    PRINT  {rs}")
 
+        if capture:
+            from compiler_core.frames import StepFrame
+
+            step_instrs = instrs[start_instr_idx:]
+            frames.append(
+                StepFrame(
+                    phase="code_gen",
+                    index=len(frames),
+                    title=f"Gen Target for Quad {idx}: {op}",
+                    detail={
+                        "quad": q,
+                        "generated_instructions": step_instrs,
+                        "index": idx,
+                    },
+                    context={
+                        "instructions": list(instrs),
+                        "registers": {r: n for r, n in ra._reg_to_name.items() if n is not None},
+                    },
+                )
+            )
+
+    if capture:
+        return instrs, frames
     return instrs
 
 
-def display(instrs):
+def generate(quads: list[list[str]]) -> list[str]:
+    """Generate pseudo-assembly instructions from TAC quadruples."""
+    return _generate_engine(quads, capture=False)
+
+
+def display(instrs: list[str]) -> None:
+    """Display the generated target pseudo-assembly on the console."""
     width = 62
     print("\n" + "═" * width)
     print(" TARGET CODE  (Pseudo-Assembly) ".center(width, "═"))
@@ -206,7 +252,8 @@ def display(instrs):
     print("═" * width + "\n")
 
 
-def save(instrs, path="./output/target_output.txt"):
+def save(instrs: list[str], path: str = "./output/target_output.txt") -> None:
+    """Save the generated target pseudo-assembly to a text file."""
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         f.write("TARGET CODE  (Pseudo-Assembly)\n")
@@ -216,3 +263,29 @@ def save(instrs, path="./output/target_output.txt"):
         f.write("=" * 62 + "\n")
         f.write(f"Total instructions : {len(instrs)}\n")
     print(f"[Success] Target code written to {path}")
+
+
+def generate_capture(quads: list[list[str]]) -> "PhaseCapture":
+    """Generate pseudo-assembly and return a PhaseCapture containing StepFrames."""
+    from compiler_core.frames import PhaseCapture
+
+    instrs, frames = _generate_engine(quads, capture=True)
+
+    # final target output format
+    final_lines = []
+    width = 62
+    final_lines.append("═" * width)
+    final_lines.append(" TARGET CODE  (Pseudo-Assembly) ".center(width, "═"))
+    final_lines.append("═" * width)
+    for inst in instrs:
+        final_lines.append(inst)
+    final_lines.append("═" * width)
+    final_lines.append(f"  Total instructions : {len(instrs)}")
+    final_lines.append("═" * width + "\n")
+
+    return PhaseCapture(
+        name="code_gen",
+        frames=frames,
+        success=True,
+        final_output=final_lines,
+    )

@@ -1,8 +1,8 @@
 
 --- FIRST SETS ---
-Program        : {'INT', 'ID', 'FLOAT', 'WHILE', 'ε', 'PRINT', 'IF', 'LBRACE'}
-StmtList       : {'INT', 'ID', 'FLOAT', 'WHILE', 'ε', 'PRINT', 'IF', 'LBRACE'}
-Stmt           : {'INT', 'ID', 'FLOAT', 'WHILE', 'PRINT', 'IF', 'LBRACE'}
+Program        : {'PRINT', 'FLOAT', 'ε', 'IF', 'INT', 'WHILE', 'LBRACE', 'ID'}
+StmtList       : {'PRINT', 'ε', 'INT', 'IF', 'FLOAT', 'WHILE', 'LBRACE', 'ID'}
+Stmt           : {'PRINT', 'INT', 'IF', 'FLOAT', 'WHILE', 'LBRACE', 'ID'}
 Decl           : {'INT', 'FLOAT'}
 DeclTail       : {'ASSIGN', 'SEMI'}
 Type           : {'INT', 'FLOAT'}
@@ -10,46 +10,46 @@ Block          : {'LBRACE'}
 AssignStmt     : {'ID'}
 PrintStmt      : {'PRINT'}
 IfStmt         : {'IF'}
-ElsePart       : {'ELSE', 'ε'}
+ElsePart       : {'ε', 'ELSE'}
 WhileStmt      : {'WHILE'}
-Expr           : {'INT', 'ID', 'FLOAT', 'LPAREN'}
-Expr'          : {'PLUS', 'MINUS', 'ε'}
-Term           : {'INT', 'ID', 'FLOAT', 'LPAREN'}
-Term'          : {'DIV', 'MULT', 'ε', 'MOD'}
-Factor         : {'LPAREN', 'INT', 'ID', 'FLOAT'}
-BoolExpr       : {'INT', 'ID', 'FLOAT', 'NOT', 'LPAREN'}
-BoolExpr'      : {'ε', 'OR'}
-BoolTerm       : {'INT', 'ID', 'FLOAT', 'NOT', 'LPAREN'}
-BoolTerm'      : {'ε', 'AND'}
-BoolFactor     : {'INT', 'ID', 'FLOAT', 'NOT', 'LPAREN'}
-RelExpr        : {'INT', 'ID', 'FLOAT', 'LPAREN'}
-RelOp          : {'LT', 'GT', 'EQ', 'GE', 'LE', 'NE'}
+Expr           : {'FLOAT', 'INT', 'LPAREN', 'ID'}
+Expr'          : {'MINUS', 'PLUS', 'ε'}
+Term           : {'FLOAT', 'INT', 'LPAREN', 'ID'}
+Term'          : {'MOD', 'DIV', 'ε', 'MULT'}
+Factor         : {'INT', 'LPAREN', 'FLOAT', 'ID'}
+BoolExpr       : {'INT', 'NOT', 'FLOAT', 'LPAREN', 'ID'}
+BoolExpr'      : {'OR', 'ε'}
+BoolTerm       : {'INT', 'NOT', 'FLOAT', 'LPAREN', 'ID'}
+BoolTerm'      : {'AND', 'ε'}
+BoolFactor     : {'INT', 'NOT', 'FLOAT', 'LPAREN', 'ID'}
+RelExpr        : {'FLOAT', 'INT', 'LPAREN', 'ID'}
+RelOp          : {'GE', 'LT', 'NE', 'GT', 'EQ', 'LE'}
 
 --- FOLLOW SETS ---
 Program        : {'$'}
-StmtList       : {'ELSE', '$', 'RBRACE'}
-Stmt           : {'ELSE', 'RBRACE', 'IF', 'INT', 'ID', 'FLOAT', '$', 'WHILE', 'PRINT', 'LBRACE'}
-Decl           : {'ELSE', 'RBRACE', 'IF', 'INT', 'ID', 'FLOAT', '$', 'WHILE', 'PRINT', 'LBRACE'}
-DeclTail       : {'ELSE', 'RBRACE', 'IF', 'INT', 'ID', 'FLOAT', '$', 'WHILE', 'PRINT', 'LBRACE'}
+StmtList       : {'$', 'RBRACE', 'ELSE'}
+Stmt           : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+Decl           : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+DeclTail       : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
 Type           : {'ID'}
-Block          : {'ELSE', 'RBRACE', 'IF', 'INT', 'ID', 'FLOAT', '$', 'WHILE', 'PRINT', 'LBRACE'}
-AssignStmt     : {'ELSE', 'RBRACE', 'IF', 'INT', 'ID', 'FLOAT', '$', 'WHILE', 'PRINT', 'LBRACE'}
-PrintStmt      : {'ELSE', 'RBRACE', 'IF', 'INT', 'ID', 'FLOAT', '$', 'WHILE', 'PRINT', 'LBRACE'}
-IfStmt         : {'ELSE', 'RBRACE', 'IF', 'INT', 'ID', 'FLOAT', '$', 'WHILE', 'PRINT', 'LBRACE'}
-ElsePart       : {'ELSE', 'RBRACE', 'IF', 'INT', 'ID', 'FLOAT', '$', 'WHILE', 'PRINT', 'LBRACE'}
-WhileStmt      : {'ELSE', 'RBRACE', 'IF', 'INT', 'ID', 'FLOAT', '$', 'WHILE', 'PRINT', 'LBRACE'}
-Expr           : {'LT', 'GT', 'AND', 'EQ', 'GE', 'RPAREN', 'LE', 'NE', 'SEMI', 'OR'}
-Expr'          : {'AND', 'GE', 'LE', 'NE', 'LT', 'GT', 'EQ', 'RPAREN', 'SEMI', 'OR'}
-Term           : {'AND', 'GE', 'LE', 'NE', 'LT', 'GT', 'EQ', 'RPAREN', 'PLUS', 'SEMI', 'MINUS', 'OR'}
-Term'          : {'AND', 'GE', 'LE', 'NE', 'LT', 'GT', 'EQ', 'RPAREN', 'PLUS', 'SEMI', 'MINUS', 'OR'}
-Factor         : {'DIV', 'AND', 'GE', 'LE', 'NE', 'MULT', 'LT', 'GT', 'EQ', 'MOD', 'RPAREN', 'PLUS', 'SEMI', 'MINUS', 'OR'}
+Block          : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+AssignStmt     : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+PrintStmt      : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+IfStmt         : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+ElsePart       : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+WhileStmt      : {'RBRACE', 'INT', 'WHILE', 'ID', 'PRINT', 'ELSE', 'IF', '$', 'FLOAT', 'LBRACE'}
+Expr           : {'SEMI', 'GE', 'LT', 'NE', 'RPAREN', 'OR', 'AND', 'GT', 'EQ', 'LE'}
+Expr'          : {'SEMI', 'LT', 'OR', 'AND', 'GT', 'EQ', 'LE', 'GE', 'NE', 'RPAREN'}
+Term           : {'SEMI', 'LT', 'OR', 'AND', 'GT', 'EQ', 'PLUS', 'LE', 'MINUS', 'GE', 'NE', 'RPAREN'}
+Term'          : {'SEMI', 'LT', 'OR', 'AND', 'GT', 'EQ', 'PLUS', 'LE', 'MINUS', 'GE', 'NE', 'RPAREN'}
+Factor         : {'SEMI', 'LT', 'DIV', 'OR', 'MOD', 'AND', 'GT', 'EQ', 'PLUS', 'LE', 'MULT', 'MINUS', 'GE', 'NE', 'RPAREN'}
 BoolExpr       : {'RPAREN'}
 BoolExpr'      : {'RPAREN'}
-BoolTerm       : {'RPAREN', 'OR'}
-BoolTerm'      : {'RPAREN', 'OR'}
-BoolFactor     : {'AND', 'RPAREN', 'OR'}
-RelExpr        : {'AND', 'RPAREN', 'OR'}
-RelOp          : {'INT', 'ID', 'FLOAT', 'LPAREN'}
+BoolTerm       : {'OR', 'RPAREN'}
+BoolTerm'      : {'OR', 'RPAREN'}
+BoolFactor     : {'OR', 'AND', 'RPAREN'}
+RelExpr        : {'OR', 'AND', 'RPAREN'}
+RelOp          : {'INT', 'FLOAT', 'LPAREN', 'ID'}
 
 
 
@@ -140,81 +140,81 @@ STEP | STACK (Top on Right)                                         | LOOKAHEAD 
 --- SLR(1) PARSE PREVIEW ---
 STEP | STACK (States)                           | LOOKAHEAD | ACTION
 --------------------------------------------------------------------
-1   | [0]                                      | INT    | s2
-2   | [0, 2]                                   | ID     | r13
-3   | [0, 6]                                   | ID     | s19
-4   | [0, 6, 19]                               | SEMI   | s34
-5   | [0, 6, 19, 34]                           | INT    | r12
-6   | [0, 6, 19, 33]                           | INT    | r10
-7   | [0, 14]                                  | INT    | r4
-8   | [0, 9]                                   | INT    | s2
-9   | [0, 9, 2]                                | ID     | r13
-10  | [0, 9, 6]                                | ID     | s19
-11  | [0, 9, 6, 19]                            | SEMI   | s34
-12  | [0, 9, 6, 19, 34]                        | INT    | r12
-13  | [0, 9, 6, 19, 33]                        | INT    | r10
-14  | [0, 9, 14]                               | INT    | r4
-15  | [0, 9, 9]                                | INT    | s2
-16  | [0, 9, 9, 2]                             | ID     | r13
-17  | [0, 9, 9, 6]                             | ID     | s19
-18  | [0, 9, 9, 6, 19]                         | SEMI   | s34
-19  | [0, 9, 9, 6, 19, 34]                     | FLOAT  | r12
-20  | [0, 9, 9, 6, 19, 33]                     | FLOAT  | r10
-21  | [0, 9, 9, 14]                            | FLOAT  | r4
-22  | [0, 9, 9, 9]                             | FLOAT  | s4
-23  | [0, 9, 9, 9, 4]                          | ID     | r14
-24  | [0, 9, 9, 9, 6]                          | ID     | s19
-25  | [0, 9, 9, 9, 6, 19]                      | SEMI   | s34
-26  | [0, 9, 9, 9, 6, 19, 34]                  | ID     | r12
-27  | [0, 9, 9, 9, 6, 19, 33]                  | ID     | r10
-28  | [0, 9, 9, 9, 14]                         | ID     | r4
-29  | [0, 9, 9, 9, 9]                          | ID     | s3
-30  | [0, 9, 9, 9, 9, 3]                       | ASSIGN | s18
-31  | [0, 9, 9, 9, 9, 3, 18]                   | INT    | s25
-32  | [0, 9, 9, 9, 9, 3, 18, 25]               | MULT   | r33
-33  | [0, 9, 9, 9, 9, 3, 18, 28]               | MULT   | s48
-34  | [0, 9, 9, 9, 9, 3, 18, 28, 48]           | LPAREN | s30
-35  | [0, 9, 9, 9, 9, 3, 18, 28, 48, 30]       | INT    | s25
-36  | [0, 9, 9, 9, 9, 3, 18, 28, 48, 30, 25]   | PLUS   | r33
-37  | [0, 9, 9, 9, 9, 3, 18, 28, 48, 30, 28]   | PLUS   | r30
-38  | ..., 9, 9, 9, 3, 18, 28, 48, 30, 28, 46] | PLUS   | r26
-39  | [0, 9, 9, 9, 9, 3, 18, 28, 48, 30, 29]   | PLUS   | s51
-40  | ..., 9, 9, 9, 3, 18, 28, 48, 30, 29, 51] | INT    | s25
-41  | ... 9, 9, 3, 18, 28, 48, 30, 29, 51, 25] | RPAREN | r33
-42  | ... 9, 9, 3, 18, 28, 48, 30, 29, 51, 28] | RPAREN | r30
-43  | ...9, 3, 18, 28, 48, 30, 29, 51, 28, 46] | RPAREN | r26
-44  | ... 9, 9, 3, 18, 28, 48, 30, 29, 51, 76] | RPAREN | r25
-45  | ...9, 3, 18, 28, 48, 30, 29, 51, 76, 90] | RPAREN | r23
-46  | ..., 9, 9, 9, 3, 18, 28, 48, 30, 29, 50] | RPAREN | r22
-47  | [0, 9, 9, 9, 9, 3, 18, 28, 48, 30, 52]   | RPAREN | s77
-48  | ..., 9, 9, 9, 3, 18, 28, 48, 30, 52, 77] | SEMI   | r31
-49  | [0, 9, 9, 9, 9, 3, 18, 28, 48, 74]       | SEMI   | r30
-50  | [0, 9, 9, 9, 9, 3, 18, 28, 48, 74, 88]   | SEMI   | r27
-51  | [0, 9, 9, 9, 9, 3, 18, 28, 46]           | SEMI   | r26
-52  | [0, 9, 9, 9, 9, 3, 18, 29]               | SEMI   | r25
-53  | [0, 9, 9, 9, 9, 3, 18, 29, 50]           | SEMI   | r22
-54  | [0, 9, 9, 9, 9, 3, 18, 31]               | SEMI   | s53
-55  | [0, 9, 9, 9, 9, 3, 18, 31, 53]           | ID     | r16
-56  | [0, 9, 9, 9, 9, 7]                       | ID     | r5
-57  | [0, 9, 9, 9, 9, 9]                       | ID     | s3
-58  | [0, 9, 9, 9, 9, 9, 3]                    | ASSIGN | s18
-59  | [0, 9, 9, 9, 9, 9, 3, 18]                | INT    | s25
-60  | [0, 9, 9, 9, 9, 9, 3, 18, 25]            | SEMI   | r33
-61  | [0, 9, 9, 9, 9, 9, 3, 18, 28]            | SEMI   | r30
-62  | [0, 9, 9, 9, 9, 9, 3, 18, 28, 46]        | SEMI   | r26
-63  | [0, 9, 9, 9, 9, 9, 3, 18, 29]            | SEMI   | r25
-64  | [0, 9, 9, 9, 9, 9, 3, 18, 29, 50]        | SEMI   | r22
-65  | [0, 9, 9, 9, 9, 9, 3, 18, 31]            | SEMI   | s53
-66  | [0, 9, 9, 9, 9, 9, 3, 18, 31, 53]        | ID     | r16
-67  | [0, 9, 9, 9, 9, 9, 7]                    | ID     | r5
-68  | [0, 9, 9, 9, 9, 9, 9]                    | ID     | s3
-69  | [0, 9, 9, 9, 9, 9, 9, 3]                 | ASSIGN | s18
-70  | [0, 9, 9, 9, 9, 9, 9, 3, 18]             | INT    | s25
-71  | [0, 9, 9, 9, 9, 9, 9, 3, 18, 25]         | SEMI   | r33
-72  | [0, 9, 9, 9, 9, 9, 9, 3, 18, 28]         | SEMI   | r30
-73  | [0, 9, 9, 9, 9, 9, 9, 3, 18, 28, 46]     | SEMI   | r26
-74  | [0, 9, 9, 9, 9, 9, 9, 3, 18, 29]         | SEMI   | r25
-75  | [0, 9, 9, 9, 9, 9, 9, 3, 18, 29, 50]     | SEMI   | r22
+1   | [0]                                      | INT    | s14
+2   | [0, 14]                                  | ID     | r13
+3   | [0, 13]                                  | ID     | s21
+4   | [0, 13, 21]                              | SEMI   | s42
+5   | [0, 13, 21, 42]                          | INT    | r12
+6   | [0, 13, 21, 41]                          | INT    | r10
+7   | [0, 3]                                   | INT    | r4
+8   | [0, 15]                                  | INT    | s14
+9   | [0, 15, 14]                              | ID     | r13
+10  | [0, 15, 13]                              | ID     | s21
+11  | [0, 15, 13, 21]                          | SEMI   | s42
+12  | [0, 15, 13, 21, 42]                      | INT    | r12
+13  | [0, 15, 13, 21, 41]                      | INT    | r10
+14  | [0, 15, 3]                               | INT    | r4
+15  | [0, 15, 15]                              | INT    | s14
+16  | [0, 15, 15, 14]                          | ID     | r13
+17  | [0, 15, 15, 13]                          | ID     | s21
+18  | [0, 15, 15, 13, 21]                      | SEMI   | s42
+19  | [0, 15, 15, 13, 21, 42]                  | FLOAT  | r12
+20  | [0, 15, 15, 13, 21, 41]                  | FLOAT  | r10
+21  | [0, 15, 15, 3]                           | FLOAT  | r4
+22  | [0, 15, 15, 15]                          | FLOAT  | s6
+23  | [0, 15, 15, 15, 6]                       | ID     | r14
+24  | [0, 15, 15, 15, 13]                      | ID     | s21
+25  | [0, 15, 15, 15, 13, 21]                  | SEMI   | s42
+26  | [0, 15, 15, 15, 13, 21, 42]              | ID     | r12
+27  | [0, 15, 15, 15, 13, 21, 41]              | ID     | r10
+28  | [0, 15, 15, 15, 3]                       | ID     | r4
+29  | [0, 15, 15, 15, 15]                      | ID     | s17
+30  | [0, 15, 15, 15, 15, 17]                  | ASSIGN | s24
+31  | [0, 15, 15, 15, 15, 17, 24]              | INT    | s29
+32  | [0, 15, 15, 15, 15, 17, 24, 29]          | MULT   | r33
+33  | [0, 15, 15, 15, 15, 17, 24, 28]          | MULT   | s52
+34  | [0, 15, 15, 15, 15, 17, 24, 28, 52]      | LPAREN | s30
+35  | [0, 15, 15, 15, 15, 17, 24, 28, 52, 30]  | INT    | s29
+36  | ..., 15, 15, 15, 17, 24, 28, 52, 30, 29] | PLUS   | r33
+37  | ..., 15, 15, 15, 17, 24, 28, 52, 30, 28] | PLUS   | r30
+38  | ..., 15, 15, 17, 24, 28, 52, 30, 28, 49] | PLUS   | r26
+39  | ..., 15, 15, 15, 17, 24, 28, 52, 30, 27] | PLUS   | s47
+40  | ..., 15, 15, 17, 24, 28, 52, 30, 27, 47] | INT    | s29
+41  | ..., 15, 17, 24, 28, 52, 30, 27, 47, 29] | RPAREN | r33
+42  | ..., 15, 17, 24, 28, 52, 30, 27, 47, 28] | RPAREN | r30
+43  | ..., 17, 24, 28, 52, 30, 27, 47, 28, 49] | RPAREN | r26
+44  | ..., 15, 17, 24, 28, 52, 30, 27, 47, 74] | RPAREN | r25
+45  | ..., 17, 24, 28, 52, 30, 27, 47, 74, 87] | RPAREN | r23
+46  | ..., 15, 15, 17, 24, 28, 52, 30, 27, 48] | RPAREN | r22
+47  | ..., 15, 15, 15, 17, 24, 28, 52, 30, 53] | RPAREN | s78
+48  | ..., 15, 15, 17, 24, 28, 52, 30, 53, 78] | SEMI   | r31
+49  | [0, 15, 15, 15, 15, 17, 24, 28, 52, 77]  | SEMI   | r30
+50  | ..., 15, 15, 15, 17, 24, 28, 52, 77, 90] | SEMI   | r27
+51  | [0, 15, 15, 15, 15, 17, 24, 28, 49]      | SEMI   | r26
+52  | [0, 15, 15, 15, 15, 17, 24, 27]          | SEMI   | r25
+53  | [0, 15, 15, 15, 15, 17, 24, 27, 48]      | SEMI   | r22
+54  | [0, 15, 15, 15, 15, 17, 24, 44]          | SEMI   | s71
+55  | [0, 15, 15, 15, 15, 17, 24, 44, 71]      | ID     | r16
+56  | [0, 15, 15, 15, 15, 7]                   | ID     | r5
+57  | [0, 15, 15, 15, 15, 15]                  | ID     | s17
+58  | [0, 15, 15, 15, 15, 15, 17]              | ASSIGN | s24
+59  | [0, 15, 15, 15, 15, 15, 17, 24]          | INT    | s29
+60  | [0, 15, 15, 15, 15, 15, 17, 24, 29]      | SEMI   | r33
+61  | [0, 15, 15, 15, 15, 15, 17, 24, 28]      | SEMI   | r30
+62  | [0, 15, 15, 15, 15, 15, 17, 24, 28, 49]  | SEMI   | r26
+63  | [0, 15, 15, 15, 15, 15, 17, 24, 27]      | SEMI   | r25
+64  | [0, 15, 15, 15, 15, 15, 17, 24, 27, 48]  | SEMI   | r22
+65  | [0, 15, 15, 15, 15, 15, 17, 24, 44]      | SEMI   | s71
+66  | [0, 15, 15, 15, 15, 15, 17, 24, 44, 71]  | ID     | r16
+67  | [0, 15, 15, 15, 15, 15, 7]               | ID     | r5
+68  | [0, 15, 15, 15, 15, 15, 15]              | ID     | s17
+69  | [0, 15, 15, 15, 15, 15, 15, 17]          | ASSIGN | s24
+70  | [0, 15, 15, 15, 15, 15, 15, 17, 24]      | INT    | s29
+71  | [0, 15, 15, 15, 15, 15, 15, 17, 24, 29]  | SEMI   | r33
+72  | [0, 15, 15, 15, 15, 15, 15, 17, 24, 28]  | SEMI   | r30
+73  | ..., 15, 15, 15, 15, 15, 17, 24, 28, 49] | SEMI   | r26
+74  | [0, 15, 15, 15, 15, 15, 15, 17, 24, 27]  | SEMI   | r25
+75  | ..., 15, 15, 15, 15, 15, 17, 24, 27, 48] | SEMI   | r22
 ... (Remaining 318 steps processed) ...
 
 [Success] SLR Parsing completed successfully in 393 steps.
