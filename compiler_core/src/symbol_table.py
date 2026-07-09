@@ -4,6 +4,8 @@ Manages scoped symbols (variables), tracking their names, types,
 scope levels, and memory offsets. Used during semantic analysis.
 """
 
+from compiler_core.src.constants import TYPE_SIZES
+
 
 class Symbol:
     def __init__(self, name: str, data_type: str, scope_level: int, offset: int):
@@ -41,7 +43,7 @@ class SymbolTable:
         """Insert a symbol into the current scope. Returns False if already declared."""
         if name in self.scopes[-1]:
             return False
-        size = 8 if data_type.upper() == "FLOAT" else 4
+        size = TYPE_SIZES.get(data_type.lower(), 4)
 
         new_symbol = Symbol(name, data_type, self.current_scope_level, self.next_offset)
         self.scopes[-1][name] = new_symbol

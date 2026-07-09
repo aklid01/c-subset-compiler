@@ -7,6 +7,8 @@ This is the first stage in the compiler pipeline.
 
 import re
 
+from compiler_core.src.tokens import Token
+
 token_specification = [
     ("FLOAT", r"\d+\.\d+"),
     ("INT", r"\d+"),
@@ -41,7 +43,7 @@ keywords = {"int", "float", "if", "else", "while", "print"}
 regex_pattern = re.compile("|".join("(?P<%s>%s)" % pair for pair in token_specification))
 
 
-def tokenize(code: str) -> tuple[list[tuple[str, str, int, int]], list[str]]:
+def tokenize(code: str) -> tuple[list[Token], list[str]]:
     """Tokenize the C-subset source code and return a tuple of (tokens, errors)."""
     tokens = []
     errors = []
@@ -78,8 +80,8 @@ def tokenize(code: str) -> tuple[list[tuple[str, str, int, int]], list[str]]:
             errors.append(error_msg)
             continue
 
-        tokens.append((kind, value, line_num, column))
+        tokens.append(Token(kind, value, line_num, column))
 
-    tokens.append(("EOF", "$", line_num, len(code_lines[-1]) + 1 if code_lines else 1))
+    tokens.append(Token("EOF", "$", line_num, len(code_lines[-1]) + 1 if code_lines else 1))
 
     return tokens, errors

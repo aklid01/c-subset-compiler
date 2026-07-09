@@ -1,5 +1,6 @@
 import sys
 
+from compiler_core.src.constants import REPORT_WIDTH
 from compiler_core.src.lexer import tokenize
 from compiler_core.src.lr_parser import SLRParser
 from compiler_core.src.parser import LL1Parser
@@ -36,7 +37,7 @@ def run_compiler(file_path):
 
     all_semantic_errors = ll1.semantic_errors + slr.semantic_errors
 
-    width = 62
+    width = REPORT_WIDTH
     if all_semantic_errors:
         print("\n" + "═" * width)
         print(" SEMANTIC ERROR REPORT ".center(width, "═"))

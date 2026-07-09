@@ -7,11 +7,14 @@ This is the second stage in the compiler pipeline.
 
 import pandas as pd
 
+from compiler_core.src.constants import CONSOLE_TRACE_LIMIT, RELOPS, REPORT_WIDTH
+from compiler_core.src.semantics import check_bool_condition
 from compiler_core.src.symbol_table import SymbolTable
+from compiler_core.src.tokens import PRETTY_NAMES, Token
 
 
 class LL1Parser:
-    def __init__(self, tokens: list[tuple[str, str, int, int]]):
+    def __init__(self, tokens: list[Token]):
         self.tokens = tokens
         self.symbol_table = SymbolTable()
         self.pos = 0
@@ -171,51 +174,8 @@ class LL1Parser:
             res.add("ε")
         return res
 
-    def _resolve_type(self, tok_kind, tok_val):
-
-        if tok_kind == "FLOAT":
-            return "float"
-        if tok_kind == "INT":
-            return "int"
-        if tok_kind == "ID":
-            sym = self.symbol_table.lookup(tok_val)
-            return sym.data_type if sym else None
-        return None
-
-    def _check_bool_condition(self, lhs_tok, relop_val, rhs_tok, line):
-
-        if relop_val not in ("==", "!="):
-            return
-        lhs_type = self._resolve_type(*lhs_tok)
-        rhs_type = self._resolve_type(*rhs_tok)
-        if lhs_type == "float" or rhs_type == "float":
-            self.semantic_errors.append(
-                f"[Error] Invalid Boolean Condition at line {line}: "
-                f"operator '{relop_val}' cannot be used with float operands "
-                f"('{lhs_tok[1]}' {relop_val} '{rhs_tok[1]}'). "
-                f"Use '<', '>', '<=', '>=' for float comparisons."
-            )
-
     def parse(self, output_file: str = "ll1_trace.txt") -> bool:
         """Parse the token stream using the LL(1) parsing table and perform semantic analysis."""
-        pretty_names = {
-            "SEMI": ";",
-            "LPAREN": "(",
-            "RPAREN": ")",
-            "LBRACE": "{",
-            "RBRACE": "}",
-            "ASSIGN": "=",
-            "PLUS": "+",
-            "MINUS": "-",
-            "MULT": "*",
-            "DIV": "/",
-            "MOD": "%",
-            "INT": "integer",
-            "FLOAT": "float",
-            "ID": "identifier",
-            "$": "end of file",
-        }
-
         stack = ["$", "Program"]
         trace_log = []
         step = 0
@@ -235,7 +195,7 @@ class LL1Parser:
             step += 1
             top = stack.pop()
             token = self.tokens[self.pos]
-            raw_kind, raw_val, line, col = token
+            raw_kind, raw_val, line, col = token.kind, token.value, token.line, token.col
             curr_kind = "$" if raw_kind == "EOF" else raw_kind
 
             if top == "LBRACE" and curr_kind == "LBRACE":
@@ -256,7 +216,7 @@ class LL1Parser:
                 if top == curr_kind:
                     action_str = f"Match {raw_kind}"
                 else:
-                    expected_char = pretty_names.get(top, top)
+                    expected_char = PRETTY_NAMES.get(top, top)
                     action_str = f"Error: Missing '{expected_char}'"
             else:
                 prod = self.table.get((top, curr_kind))
@@ -265,7 +225,7 @@ class LL1Parser:
                     if top == "Decl":
                         decl_flag = True
                 else:
-                    expected_list = [pretty_names.get(t, t) for t in (self.first[top] - {"ε"})]
+                    expected_list = [PRETTY_NAMES.get(t, t) for t in (self.first[top] - {"ε"})]
                     action_str = f"Error: Expected one of {expected_list}"
 
             trace_log.append(
@@ -324,20 +284,26 @@ class LL1Parser:
                     expect_rhs_tok = False
                     assign_lhs_var = None
 
-                RELOPS = {"LT", "GT", "LE", "GE", "EQ", "NE"}
                 if top in RELOPS:
                     relop_val = raw_val
                     relexpr_line = line
                     if self.pos >= 1:
                         prev = self.tokens[self.pos - 1]
-                        relexpr_lhs = (prev[0], prev[1])
+                        relexpr_lhs = (prev.kind, prev.value)
                     else:
                         relexpr_lhs = None
 
                 elif relop_val is not None and top in ("ID", "INT", "FLOAT"):
                     rhs_tok = (raw_kind, raw_val)
                     if relexpr_lhs is not None:
-                        self._check_bool_condition(relexpr_lhs, relop_val, rhs_tok, relexpr_line)
+                        check_bool_condition(
+                            self.symbol_table,
+                            self.semantic_errors,
+                            relexpr_lhs,
+                            relop_val,
+                            rhs_tok,
+                            relexpr_line,
+                        )
                     relop_val = None
                     relexpr_lhs = None
 
@@ -371,7 +337,7 @@ class LL1Parser:
 
         print("\n--- LL(1) PARSE PREVIEW ---")
         print(header_console + "\n" + sep_console)
-        for entry in trace_log[:75]:
+        for entry in trace_log[:CONSOLE_TRACE_LIMIT]:
             c_stack = entry["stack"]
             if len(c_stack) > console_stack_w:
                 c_stack = "..." + c_stack[-(console_stack_w - 3) :]
@@ -383,8 +349,8 @@ class LL1Parser:
                     action=entry["action"],
                 )
             )
-        if len(trace_log) > 75:
-            print(f"... (Remaining {len(trace_log)-75} steps processed) ...")
+        if len(trace_log) > CONSOLE_TRACE_LIMIT:
+            print(f"... (Remaining {len(trace_log)-CONSOLE_TRACE_LIMIT} steps processed) ...")
 
         if success:
             file_format = (
@@ -429,7 +395,7 @@ class LL1Parser:
         if not self.semantic_errors:
             print("\n[Info] LL(1): No semantic errors detected.\n")
             return
-        width = 62
+        width = REPORT_WIDTH
         print("\n" + "═" * width)
         print(" LL(1) SEMANTIC ERRORS ".center(width, "═"))
         print("═" * width)

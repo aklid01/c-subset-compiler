@@ -6,16 +6,19 @@ This is the third stage in the compiler pipeline.
 """
 
 from compiler_core.helper.tac_manager import TACManager
+from compiler_core.src.constants import CONSOLE_TRACE_LIMIT, RELOPS, REPORT_WIDTH
+from compiler_core.src.semantics import check_bool_condition
 from compiler_core.src.symbol_table import SymbolTable
+from compiler_core.src.tokens import PRETTY_NAMES, Token
 
 _NO_OP = object()
 
 
 class SLRParser:
-    def __init__(self, tokens: list[tuple[str, str, int, int]], base_parser):
+    def __init__(self, tokens: list[Token], base_parser):
         """Initialize the SLR(1) parser with token stream and base parser (for sets)."""
-        if not tokens or tokens[-1][0] != "EOF":
-            self.tokens = tokens + [("EOF", "$", -1, -1)]
+        if not tokens or tokens[-1].kind != "EOF":
+            self.tokens = tokens + [Token("EOF", "$", -1, -1)]
         else:
             self.tokens = tokens
         self.symbol_table = SymbolTable()
@@ -101,31 +104,6 @@ class SLRParser:
                                 self.action_table[(i, term)] = f"r{r_idx}"
             i += 1
 
-    def _resolve_type(self, tok_kind, tok_val):
-
-        if tok_kind == "FLOAT":
-            return "float"
-        if tok_kind == "INT":
-            return "int"
-        if tok_kind == "ID":
-            sym = self.symbol_table.lookup(tok_val)
-            return sym.data_type if sym else None
-        return None
-
-    def _check_bool_condition(self, lhs_tok, relop_val, rhs_tok, line):
-
-        if relop_val not in ("==", "!="):
-            return
-        lhs_type = self._resolve_type(*lhs_tok)
-        rhs_type = self._resolve_type(*rhs_tok)
-        if lhs_type == "float" or rhs_type == "float":
-            self.semantic_errors.append(
-                f"[Error] Invalid Boolean Condition at line {line}: "
-                f"operator '{relop_val}' cannot be used with float operands "
-                f"('{lhs_tok[1]}' {relop_val} '{rhs_tok[1]}'). "
-                f"Use '<', '>', '<=', '>=' for float comparisons."
-            )
-
     def parse(self, output_file: str = "slr_trace.txt") -> tuple[bool, TACManager]:
         """Parse the token stream using the SLR(1) parsing table and generate TAC."""
         stack = [0]
@@ -140,7 +118,6 @@ class SLRParser:
 
         tac = TACManager()
 
-        RELOPS = {"LT", "GT", "LE", "GE", "EQ", "NE"}
         relop_shifted = None
         relexpr_lhs_tok = None
         relexpr_line = None
@@ -148,7 +125,8 @@ class SLRParser:
         while True:
             step += 1
             state = stack[-1]
-            token_kind, token_val, line, col = self.tokens[self.pos]
+            token = self.tokens[self.pos]
+            token_kind, token_val, line, col = token.kind, token.value, token.line, token.col
             lookahead = "$" if token_kind == "EOF" else token_kind
             action = self.action_table.get((state, lookahead))
 
@@ -205,7 +183,7 @@ class SLRParser:
                 if lookahead in RELOPS:
                     if self.pos >= 1:
                         prev = self.tokens[self.pos - 1]
-                        relexpr_lhs_tok = (prev[0], prev[1])
+                        relexpr_lhs_tok = (prev.kind, prev.value)
                     else:
                         relexpr_lhs_tok = None
                     relop_shifted = (lookahead, token_val)
@@ -214,7 +192,9 @@ class SLRParser:
                 elif relop_shifted is not None and lookahead in ("ID", "INT", "FLOAT"):
                     rhs_tok = (lookahead, token_val)
                     if relexpr_lhs_tok is not None:
-                        self._check_bool_condition(
+                        check_bool_condition(
+                            self.symbol_table,
+                            self.semantic_errors,
                             relexpr_lhs_tok,
                             relop_shifted[1],
                             rhs_tok,
@@ -451,13 +431,7 @@ class SLRParser:
 
             else:
                 expected_tokens = [t for (s, t) in self.action_table if s == state]
-                pretty_names = {
-                    "SEMI": ";",
-                    "RBRACE": "}",
-                    "ID": "identifier",
-                    "ASSIGN": "=",
-                }
-                friendly = [pretty_names.get(t, t) for t in expected_tokens]
+                friendly = [PRETTY_NAMES.get(t, t) for t in expected_tokens]
                 error_msg = f"Error: Expected {friendly}, but found '{token_val}'"
                 trace_log.append(
                     {
@@ -489,7 +463,7 @@ class SLRParser:
         print("\n--- SLR(1) PARSE PREVIEW ---")
         print(header + "\n" + "-" * len(header))
 
-        for entry in trace_log[:75]:
+        for entry in trace_log[:CONSOLE_TRACE_LIMIT]:
             c_stack = entry["stack"]
             if len(c_stack) > console_stack_w:
                 c_stack = "..." + c_stack[-(console_stack_w - 3) :]
@@ -501,8 +475,8 @@ class SLRParser:
                     action=entry["action"],
                 )
             )
-        if len(trace_log) > 75:
-            print(f"... (Remaining {len(trace_log)-75} steps processed) ...")
+        if len(trace_log) > CONSOLE_TRACE_LIMIT:
+            print(f"... (Remaining {len(trace_log)-CONSOLE_TRACE_LIMIT} steps processed) ...")
 
         if success:
             with open(f"./traces/{output_file}", "w", encoding="utf-8") as f:
@@ -528,7 +502,7 @@ class SLRParser:
         if not self.semantic_errors:
             print("\n[Info] SLR(1): No semantic errors detected.\n")
             return
-        width = 62
+        width = REPORT_WIDTH
         print("\n" + "═" * width)
         print(" SLR(1) SEMANTIC ERRORS ".center(width, "═"))
         print("═" * width)

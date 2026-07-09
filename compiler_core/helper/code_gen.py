@@ -6,7 +6,8 @@ performing liveness analysis and register allocation.
 
 import os
 
-NUM_REGS = 8
+from compiler_core.src.constants import NUM_REGS
+
 _ARITH_MAP = {"+": "ADD", "-": "SUB", "*": "MUL", "/": "DIV", "%": "MOD"}
 _RELOP_MAP = {
     "<": "SLT",
