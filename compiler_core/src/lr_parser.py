@@ -173,7 +173,9 @@ class SLRParser:
                         detail=trace_log[-1],
                         context={
                             "stack": list(stack),
-                            "semantic_stack": list(semantic_stack),
+                            "semantic_stack": [
+                                "ε" if val is _NO_OP else str(val) for val in semantic_stack
+                            ],
                             "control_stack": list(control_stack),
                             "symbol_table": sym_table_snap,
                             "semantic_errors": list(self.semantic_errors),
