@@ -36,6 +36,7 @@ class VisualizerApp(App):
         ("right,n", "next_frame", "Next Step"),
         ("home", "first_frame", "Jump to Start"),
         ("end", "last_frame", "Jump to End"),
+        ("o", "show_output_info", "Check output/ Folder"),
         ("q", "quit", "Quit App"),
     ]
 
@@ -78,12 +79,6 @@ class VisualizerApp(App):
         border: tall #444444;
         overflow-y: auto;
     }
-    #console_output {
-        height: 10;
-        background: #121212;
-        border: tall #00bcd4;
-        overflow-y: auto;
-    }
     """
 
     def __init__(self, session: VizSession):
@@ -120,7 +115,6 @@ class VisualizerApp(App):
                         id="source_code",
                         read_only=True,
                     )
-                yield Static(id="console_output")
 
         yield Footer()
 
@@ -150,6 +144,13 @@ class VisualizerApp(App):
         self.session.jump_to_end()
         self.update_ui()
 
+    def action_show_output_info(self) -> None:
+        self.notify(
+            "Full compilation outputs are generated in the './output/' folder.",
+            title="Outputs Generated",
+            severity="info",
+        )
+
     def update_ui(self) -> None:
         phase = self.session.current_phase
         frame_idx = self.session.frame_index
@@ -170,19 +171,9 @@ class VisualizerApp(App):
                 )
             )
             self.query_one("#source_code", TextArea).text = self.session.source
-            self.query_one("#console_output", Static).update(
-                Panel(
-                    (
-                        "This phase was skipped because earlier stages of "
-                        "compilation failed or encountered semantic errors."
-                    ),
-                    title=f"Final Output for {self.phase_map.get(phase, phase)}",
-                    border_style="red",
-                )
-            )
-            self.query_one("#state_context", Static).update(
-                "No active frame details (phase skipped)."
-            )
+            state_widget = self.query_one("#state_context", Static)
+            state_widget.update("No active frame details (phase skipped).")
+            state_widget.refresh(layout=True)
             return
 
         frames_count = len(capture.frames)
@@ -210,21 +201,12 @@ class VisualizerApp(App):
         else:
             source_widget.cursor_location = (0, 0)
 
-        # Update console final output block
-        final_lines = "\n".join(capture.final_output) if capture.final_output else ""
-        self.query_one("#console_output", Static).update(
-            Panel(
-                final_lines,
-                title=f"Final Output for {self.phase_map.get(phase, phase)}",
-                border_style="cyan",
-            )
-        )
-
         # Update state context panel
         self.update_context_pane(phase, frame)
+        state_widget = self.query_one("#state_context", Static)
+        state_widget.refresh(layout=True)
 
         # Auto-scroll state context to track active step or bottom of container
-        state_widget = self.query_one("#state_context", Static)
         if phase in ("tac", "optimizer") and frame and frame.detail:
             idx = frame.detail.get("index")
             if idx is not None:
