@@ -5,12 +5,26 @@ with first/follow set generation and semantic type checks.
 This is the second stage in the compiler pipeline.
 """
 
+import os
+from dataclasses import dataclass
+
 import pandas as pd
 
 from compiler_core.src.constants import CONSOLE_TRACE_LIMIT, RELOPS, REPORT_WIDTH
 from compiler_core.src.semantics import check_bool_condition
 from compiler_core.src.symbol_table import SymbolTable
 from compiler_core.src.tokens import PRETTY_NAMES, Token
+
+
+@dataclass
+class _LL1SemanticState:
+    decl_flag: bool = False
+    decl_type: str | None = None
+    assign_lhs_var: str | None = None
+    expect_rhs_tok: bool = False
+    relop_val: str | None = None
+    relexpr_lhs: tuple[str, str] | None = None
+    relexpr_line: int | None = None
 
 
 class LL1Parser:
@@ -174,22 +188,13 @@ class LL1Parser:
             res.add("ε")
         return res
 
-    def parse(self, output_file: str = "ll1_trace.txt") -> bool:
-        """Parse the token stream using the LL(1) parsing table and perform semantic analysis."""
+    def _run_parse_loop(self) -> tuple[bool, list[dict]]:
         stack = ["$", "Program"]
         trace_log = []
         step = 0
         success = False
 
-        decl_flag = False
-        decl_type = None
-
-        assign_lhs_var = None
-        expect_rhs_tok = False
-
-        relop_val = None
-        relexpr_lhs = None
-        relexpr_line = None
+        state = _LL1SemanticState()
 
         while stack:
             step += 1
@@ -223,7 +228,7 @@ class LL1Parser:
                 if prod:
                     action_str = f"Apply {top} -> {' '.join(prod)}"
                     if top == "Decl":
-                        decl_flag = True
+                        state.decl_flag = True
                 else:
                     expected_list = [PRETTY_NAMES.get(t, t) for t in (self.first[top] - {"ε"})]
                     action_str = f"Error: Expected one of {expected_list}"
@@ -244,19 +249,19 @@ class LL1Parser:
                 break
 
             if top in self.terminals:
-                if decl_flag and top in ("INT", "FLOAT"):
-                    decl_type = raw_val
+                if state.decl_flag and top in ("INT", "FLOAT"):
+                    state.decl_type = raw_val
 
-                if top == "ID" and decl_flag:
-                    ok = self.symbol_table.insert(raw_val, decl_type)
+                if top == "ID" and state.decl_flag:
+                    ok = self.symbol_table.insert(raw_val, state.decl_type)
                     if not ok:
                         self.semantic_errors.append(
                             f"[Error] Multiple Declaration: Variable '{raw_val}' "
                             f"at line {line}, column {col} is already declared "
                             f"in this scope."
                         )
-                    decl_flag = False
-                    decl_type = None
+                    state.decl_flag = False
+                    state.decl_type = None
 
                 elif top == "ID":
                     sym = self.symbol_table.lookup(raw_val)
@@ -266,46 +271,46 @@ class LL1Parser:
                             f"line {line}, column {col} without prior declaration."
                         )
 
-                if top == "ID" and not decl_flag:
-                    assign_lhs_var = raw_val
+                if top == "ID" and not state.decl_flag:
+                    state.assign_lhs_var = raw_val
 
-                if top == "ASSIGN" and not decl_flag:
-                    expect_rhs_tok = True
+                if top == "ASSIGN" and not state.decl_flag:
+                    state.expect_rhs_tok = True
 
-                elif expect_rhs_tok and top in ("INT", "FLOAT", "ID", "LPAREN"):
-                    if raw_kind == "FLOAT" and assign_lhs_var:
-                        sym = self.symbol_table.lookup(assign_lhs_var)
+                elif state.expect_rhs_tok and top in ("INT", "FLOAT", "ID", "LPAREN"):
+                    if raw_kind == "FLOAT" and state.assign_lhs_var:
+                        sym = self.symbol_table.lookup(state.assign_lhs_var)
                         if sym and sym.data_type == "int":
                             self.semantic_errors.append(
                                 f"[Error] Type Mismatch at line {line}: cannot "
                                 f"assign float literal '{raw_val}' to int "
-                                f"variable '{assign_lhs_var}'."
+                                f"variable '{state.assign_lhs_var}'."
                             )
-                    expect_rhs_tok = False
-                    assign_lhs_var = None
+                    state.expect_rhs_tok = False
+                    state.assign_lhs_var = None
 
                 if top in RELOPS:
-                    relop_val = raw_val
-                    relexpr_line = line
+                    state.relop_val = raw_val
+                    state.relexpr_line = line
                     if self.pos >= 1:
                         prev = self.tokens[self.pos - 1]
-                        relexpr_lhs = (prev.kind, prev.value)
+                        state.relexpr_lhs = (prev.kind, prev.value)
                     else:
-                        relexpr_lhs = None
+                        state.relexpr_lhs = None
 
-                elif relop_val is not None and top in ("ID", "INT", "FLOAT"):
+                elif state.relop_val is not None and top in ("ID", "INT", "FLOAT"):
                     rhs_tok = (raw_kind, raw_val)
-                    if relexpr_lhs is not None:
+                    if state.relexpr_lhs is not None:
                         check_bool_condition(
                             self.symbol_table,
                             self.semantic_errors,
-                            relexpr_lhs,
-                            relop_val,
+                            state.relexpr_lhs,
+                            state.relop_val,
                             rhs_tok,
-                            relexpr_line,
+                            state.relexpr_line,
                         )
-                    relop_val = None
-                    relexpr_lhs = None
+                    state.relop_val = None
+                    state.relexpr_lhs = None
 
                 self.pos += 1
             else:
@@ -314,6 +319,11 @@ class LL1Parser:
                     for symbol in reversed(prod):
                         stack.append(symbol)
 
+        return success, trace_log
+
+    def _render_console(self, trace_log: list[dict]) -> None:
+        if not trace_log:
+            return
         max_step_w = max(len(d["step"]) for d in trace_log)
         max_stack_w = max(len(d["stack"]) for d in trace_log)
         max_look_w = max(len(d["lookahead"]) for d in trace_log)
@@ -352,32 +362,50 @@ class LL1Parser:
         if len(trace_log) > CONSOLE_TRACE_LIMIT:
             print(f"... (Remaining {len(trace_log)-CONSOLE_TRACE_LIMIT} steps processed) ...")
 
+    def _write_trace(self, trace_log: list[dict], output_file: str) -> None:
+        if not trace_log:
+            return
+        max_step_w = max(len(d["step"]) for d in trace_log)
+        max_stack_w = max(len(d["stack"]) for d in trace_log)
+        max_look_w = max(len(d["lookahead"]) for d in trace_log)
+        max_step_w = max(max_step_w, len("STEP"))
+        max_look_w = max(max_look_w, len("LOOKAHEAD"))
+        header_stack_label = "STACK (Top on Right)"
+        actual_stack_w = max(max_stack_w, len(header_stack_label))
+
+        file_format = (
+            f"{{step:<{max_step_w}}} | {{stack:<{actual_stack_w}}} "
+            f"| {{lookahead:<{max_look_w}}} | {{action}}"
+        )
+        header_file = file_format.format(
+            step="STEP",
+            stack=header_stack_label,
+            lookahead="LOOKAHEAD",
+            action="ACTION",
+        )
+        sep_file = "-" * len(header_file)
+        os.makedirs("./traces", exist_ok=True)
+        with open(f"./traces/{output_file}", "w", encoding="utf-8") as f:
+            f.write(
+                "LL(1) SUCCESSFUL PARSE TRACE\n"
+                + sep_file
+                + "\n"
+                + header_file
+                + "\n"
+                + sep_file
+                + "\n"
+            )
+            for entry in trace_log:
+                f.write(file_format.format(**entry) + "\n")
+        print(f"\n[Success] Parsing completed successfully in {len(trace_log)} steps.")
+        print(f"[Success] Full trace saved to traces/{output_file}\n")
+
+    def parse(self, output_file: str = "ll1_trace.txt") -> bool:
+        """Parse the token stream using the LL(1) parsing table and perform semantic analysis."""
+        success, trace_log = self._run_parse_loop()
+        self._render_console(trace_log)
         if success:
-            file_format = (
-                f"{{step:<{max_step_w}}} | {{stack:<{actual_stack_w}}} "
-                f"| {{lookahead:<{max_look_w}}} | {{action}}"
-            )
-            header_file = file_format.format(
-                step="STEP",
-                stack=header_stack_label,
-                lookahead="LOOKAHEAD",
-                action="ACTION",
-            )
-            sep_file = "-" * len(header_file)
-            with open(f"./traces/{output_file}", "w", encoding="utf-8") as f:
-                f.write(
-                    "LL(1) SUCCESSFUL PARSE TRACE\n"
-                    + sep_file
-                    + "\n"
-                    + header_file
-                    + "\n"
-                    + sep_file
-                    + "\n"
-                )
-                for entry in trace_log:
-                    f.write(file_format.format(**entry) + "\n")
-            print(f"\n[Success] Parsing completed successfully in {len(trace_log)} steps.")
-            print(f"[Success] Full trace saved to traces/{output_file}\n")
+            self._write_trace(trace_log, output_file)
         else:
             failed = trace_log[-1]
             print(f"\n[Fail] Syntax error at line {failed['line']} and column {failed['col']}.")
@@ -387,7 +415,6 @@ class LL1Parser:
             )
             print(f"[Fail] {failed['action']}")
             print("[Fail] Parsing failed. No trace file was generated.")
-
         return success
 
     def print_semantic_errors(self):

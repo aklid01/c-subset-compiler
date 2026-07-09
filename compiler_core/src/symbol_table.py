@@ -60,28 +60,38 @@ class SymbolTable:
                 return scope[name]
         return None
 
-    def display(self, parser_name: str) -> None:
-        """Print the step-by-step allocations and final attributes formatted report."""
-        print("\n" + "═" * 60)
-        print(f" {parser_name} SYMBOL TABLE REPORT ".center(60, "═"))
-        print("═" * 60)
-        print("\n▣ STEP-BY-STEP UPDATES")
-        print("─" * 40)
+    def format_report(self, parser_name: str) -> list[str]:
+        """Generate the step-by-step allocations and final attributes formatted report lines."""
+        lines = []
+        lines.append("═" * 60)
+        lines.append(f" {parser_name} SYMBOL TABLE REPORT ".center(60, "═"))
+        lines.append("═" * 60)
+        lines.append("\n▣ STEP-BY-STEP UPDATES")
+        lines.append("─" * 40)
         for entry in self.log:
             if "Level 1" in entry or "Level 2" in entry:
-                print(f"  ▸ {entry}")
+                lines.append(f"  ▸ {entry}")
             else:
-                print(f"  • {entry}")
-        print("\n▣ FINAL ATTRIBUTE SUMMARY")
-        print("─" * 60)
+                lines.append(f"  • {entry}")
+        lines.append("\n▣ FINAL ATTRIBUTE SUMMARY")
+        lines.append("─" * 60)
         header = f"{'Variable':<12} | {'Type':<10} | {'Scope':<8} | {'Offset':<8}"
-        print(header)
-        print("-" * 60)
+        lines.append(header)
+        lines.append("-" * 60)
 
         for name, sym in self.history:
-            print(f"{name:<12} | {sym.data_type:<10} | {sym.scope_level:<8} | {sym.offset:<8}")
+            lines.append(
+                f"{name:<12} | {sym.data_type:<10} | {sym.scope_level:<8} | {sym.offset:<8}"
+            )
 
-        print("─" * 60)
-        print(f"Total Stack Memory Reserved: {self.next_offset} bytes")
-        print("═" * 60 + "\n")
-        print(f"[Success] {parser_name} symbol table generated.")
+        lines.append("─" * 60)
+        lines.append(f"Total Stack Memory Reserved: {self.next_offset} bytes")
+        lines.append("═" * 60)
+        lines.append("")
+        lines.append(f"[Success] {parser_name} symbol table generated.")
+        return lines
+
+    def display(self, parser_name: str) -> None:
+        """Print the step-by-step allocations and final attributes formatted report."""
+        report = self.format_report(parser_name)
+        print("\n" + "\n".join(report))

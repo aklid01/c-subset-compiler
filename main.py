@@ -6,6 +6,31 @@ from compiler_core.src.lr_parser import SLRParser
 from compiler_core.src.parser import LL1Parser
 
 
+def report_semantic_errors(ll1_errors: list[str], slr_errors: list[str]) -> None:
+    """Print a formatted report of all semantic errors detected by LL(1) and SLR(1) parsers."""
+    all_semantic_errors = ll1_errors + slr_errors
+    width = REPORT_WIDTH
+    print("\n" + "═" * width)
+    print(" SEMANTIC ERROR REPORT ".center(width, "═"))
+    print("═" * width)
+    print(f"  Total errors found: {len(all_semantic_errors)}")
+    print("─" * width)
+
+    if ll1_errors:
+        print(f"\n  ▸ LL(1) detected {len(ll1_errors)} error(s):\n")
+        for err in ll1_errors:
+            print(f"    {err}")
+
+    if slr_errors:
+        print(f"\n  ▸ SLR(1) detected {len(slr_errors)} error(s):\n")
+        for err in slr_errors:
+            print(f"    {err}")
+
+    print("\n" + "═" * width)
+    print(" TAC generation skipped due to semantic errors. ".center(width, "═"))
+    print("═" * width + "\n")
+
+
 def run_compiler(file_path):
     try:
         with open(file_path) as f:
@@ -37,29 +62,11 @@ def run_compiler(file_path):
 
     all_semantic_errors = ll1.semantic_errors + slr.semantic_errors
 
-    width = REPORT_WIDTH
     if all_semantic_errors:
-        print("\n" + "═" * width)
-        print(" SEMANTIC ERROR REPORT ".center(width, "═"))
-        print("═" * width)
-        print(f"  Total errors found: {len(all_semantic_errors)}")
-        print("─" * width)
-
-        if ll1.semantic_errors:
-            print(f"\n  ▸ LL(1) detected {len(ll1.semantic_errors)} error(s):\n")
-            for err in ll1.semantic_errors:
-                print(f"    {err}")
-
-        if slr.semantic_errors:
-            print(f"\n  ▸ SLR(1) detected {len(slr.semantic_errors)} error(s):\n")
-            for err in slr.semantic_errors:
-                print(f"    {err}")
-
-        print("\n" + "═" * width)
-        print(" TAC generation skipped due to semantic errors. ".center(width, "═"))
-        print("═" * width + "\n")
+        report_semantic_errors(ll1.semantic_errors, slr.semantic_errors)
         return
 
+    width = REPORT_WIDTH
     print("\n" + "═" * width)
     print(" SEMANTIC ANALYSIS ".center(width, "═"))
     print("═" * width)

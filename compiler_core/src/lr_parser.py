@@ -5,6 +5,8 @@ and three-address code (TAC) generation with semantic checking.
 This is the third stage in the compiler pipeline.
 """
 
+import os
+
 from compiler_core.helper.tac_manager import TACManager
 from compiler_core.src.constants import CONSOLE_TRACE_LIMIT, RELOPS, REPORT_WIDTH
 from compiler_core.src.semantics import check_bool_condition
@@ -104,8 +106,7 @@ class SLRParser:
                                 self.action_table[(i, term)] = f"r{r_idx}"
             i += 1
 
-    def parse(self, output_file: str = "slr_trace.txt") -> tuple[bool, TACManager]:
-        """Parse the token stream using the SLR(1) parsing table and generate TAC."""
+    def _run_parse_loop(self) -> tuple[bool, list[dict], TACManager]:
         stack = [0]
         trace_log = []
         step = 0
@@ -446,6 +447,11 @@ class SLRParser:
                 )
                 break
 
+        return success, trace_log, tac
+
+    def _render_console(self, trace_log: list[dict]) -> None:
+        if not trace_log:
+            return
         max_step_w = max(len(d["step"]) for d in trace_log)
         max_look_w = max(len(d["lookahead"]) for d in trace_log)
         console_stack_w = 40
@@ -478,23 +484,32 @@ class SLRParser:
         if len(trace_log) > CONSOLE_TRACE_LIMIT:
             print(f"... (Remaining {len(trace_log)-CONSOLE_TRACE_LIMIT} steps processed) ...")
 
+    def _write_trace(self, trace_log: list[dict], output_file: str) -> None:
+        if not trace_log:
+            return
+        os.makedirs("./traces", exist_ok=True)
+        with open(f"./traces/{output_file}", "w", encoding="utf-8") as f:
+            f.write("SLR(1) SUCCESSFUL PARSE TRACE\n" + "=" * 50 + "\n")
+            for entry in trace_log:
+                f.write(
+                    f"Step {entry['step']} | Stack: {entry['stack']} "
+                    f"| Lookahead: {entry['lookahead']} | Action: {entry['action']}\n"
+                )
+        print(f"\n[Success] SLR Parsing completed successfully in {len(trace_log)} steps.")
+        print(f"[Success] Full SLR trace saved to traces/{output_file}")
+
+    def parse(self, output_file: str = "slr_trace.txt") -> tuple[bool, TACManager]:
+        """Parse the token stream using the SLR(1) parsing table and generate TAC."""
+        success, trace_log, tac = self._run_parse_loop()
+        self._render_console(trace_log)
         if success:
-            with open(f"./traces/{output_file}", "w", encoding="utf-8") as f:
-                f.write("SLR(1) SUCCESSFUL PARSE TRACE\n" + "=" * 50 + "\n")
-                for entry in trace_log:
-                    f.write(
-                        f"Step {entry['step']} | Stack: {entry['stack']} "
-                        f"| Lookahead: {entry['lookahead']} | Action: {entry['action']}\n"
-                    )
-            print(f"\n[Success] SLR Parsing completed successfully in {len(trace_log)} steps.")
-            print(f"[Success] Full SLR trace saved to traces/{output_file}")
+            self._write_trace(trace_log, output_file)
         else:
             failed = trace_log[-1]
             print(f"\n[Fail] SLR Syntax error at line {failed['line']}, col {failed['col']}.")
             print(f"[Fail] Found '{failed['val']}' with no valid transition in Action Table.")
             print(f"[Fail] {failed['action']}")
             print("[Fail] Parsing failed. No trace file was generated.")
-
         return success, tac
 
     def print_semantic_errors(self):

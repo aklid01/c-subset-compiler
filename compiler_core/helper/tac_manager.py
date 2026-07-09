@@ -53,9 +53,11 @@ class TACManager:
             f"| {str(q[2]):<{_COL_W}}| {str(q[3]):<{_COL_W}}"
         )
 
-    def _lines(self):
+    def _lines(self, quads: list[list[str]] = None) -> list[str]:
+        if quads is None:
+            quads = self.quads
         header, sep = self._header()
-        rows = [self._row(i, q) for i, q in enumerate(self.quads)]
+        rows = [self._row(i, q) for i, q in enumerate(quads)]
         return [header, sep] + rows
 
     def display(self) -> None:
@@ -63,7 +65,7 @@ class TACManager:
         print("\n" + "═" * 60)
         print(" THREE-ADDRESS CODE  (Quadruples) ".center(60, "═"))
         print("═" * 60)
-        for line in self._lines():
+        for line in self._lines(self.quads):
             print(line)
         print("═" * 60)
         print(f"  Total quads : {len(self.quads)}")
@@ -77,7 +79,7 @@ class TACManager:
         with open(path, "w", encoding="utf-8") as f:
             f.write("THREE-ADDRESS CODE  (Quadruples)\n")
             f.write("=" * 60 + "\n")
-            for line in self._lines():
+            for line in self._lines(self.quads):
                 f.write(line + "\n")
             f.write("=" * 60 + "\n")
             f.write(f"Total quads : {len(self.quads)}\n")
@@ -101,18 +103,9 @@ class TACManager:
         print("\n" + "═" * width)
         print(" OPTIMIZED THREE-ADDRESS CODE  (Quadruples) ".center(width, "═"))
         print("═" * width)
-        header = (
-            f"{'Index':<8}| {'Op':<{_COL_W}}| {'Arg1':<{_COL_W}}"
-            f"| {'Arg2':<{_COL_W}}| {'Result':<{_COL_W}}"
-        )
-        sep = "─" * (8 + 1 + (_COL_W + 3) * 4)
-        print(header)
-        print(sep)
-        for i, q in enumerate(opt_quads):
-            print(
-                f"{i:<8}| {str(q[0]):<{_COL_W}}| {str(q[1]):<{_COL_W}}"
-                f"| {str(q[2]):<{_COL_W}}| {str(q[3]):<{_COL_W}}"
-            )
+        opt_lines = self._lines(opt_quads)
+        for line in opt_lines:
+            print(line)
         print("═" * width)
         print(f"  Total quads : {len(opt_quads)}")
         print("═" * width + "\n")
@@ -121,13 +114,8 @@ class TACManager:
         with open(opt_path, "w", encoding="utf-8") as f:
             f.write("OPTIMIZED THREE-ADDRESS CODE  (Quadruples)\n")
             f.write("=" * 60 + "\n")
-            f.write(header + "\n")
-            f.write(sep + "\n")
-            for i, q in enumerate(opt_quads):
-                f.write(
-                    f"{i:<8}| {str(q[0]):<{_COL_W}}| {str(q[1]):<{_COL_W}}"
-                    f"| {str(q[2]):<{_COL_W}}| {str(q[3]):<{_COL_W}}\n"
-                )
+            for line in opt_lines:
+                f.write(line + "\n")
             f.write("=" * 60 + "\n")
             f.write(f"Total quads : {len(opt_quads)}\n")
         print(f"[Success] Optimized TAC written to {opt_path}")
