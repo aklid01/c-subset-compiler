@@ -66,7 +66,7 @@ class VisualizerApp(App):
         height: 100%;
         background: #151515;
         border: tall #444444;
-        overflow-y: auto;
+        overflow-y: scroll;
     }
     #source_code {
         width: 1fr;
@@ -226,7 +226,8 @@ class VisualizerApp(App):
             idx = frame.detail.get("index")
             if idx is not None:
                 viewport_height = state_widget.size.height or 15
-                target_y = max(0, idx - (viewport_height // 2))
+                target_line = 3 + idx * 2
+                target_y = max(0, target_line - (viewport_height // 2))
                 self.call_after_refresh(state_widget.scroll_to, y=target_y, animate=False)
         else:
             self.call_after_refresh(state_widget.scroll_end, animate=False)
