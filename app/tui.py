@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from textual.app import App, ComposeResult
-from textual.containers import Container, Horizontal, Vertical
+from textual.containers import Container, Horizontal, ScrollableContainer, Vertical
 from textual.widgets import Footer, Header, Label, ListItem, ListView, Static, TextArea
 
 if TYPE_CHECKING:
@@ -70,7 +70,6 @@ class VisualizerApp(App):
         height: 100%;
         background: #151515;
         border: tall #444444;
-        overflow-y: scroll;
     }
     #source_code {
         width: 1fr;
@@ -108,7 +107,8 @@ class VisualizerApp(App):
             with Vertical(id="main_container"):
                 yield Static(id="step_info")
                 with Horizontal(id="middle_container"):
-                    yield Static(id="state_context")
+                    with ScrollableContainer(id="state_context"):
+                        yield Static(id="state_context_content")
                     yield NonFocusTextArea(
                         self.session.source,
                         language="c",
@@ -171,7 +171,7 @@ class VisualizerApp(App):
                 )
             )
             self.query_one("#source_code", TextArea).text = self.session.source
-            state_widget = self.query_one("#state_context", Static)
+            state_widget = self.query_one("#state_context_content", Static)
             state_widget.update("No active frame details (phase skipped).")
             state_widget.refresh(layout=True)
             return
@@ -203,30 +203,35 @@ class VisualizerApp(App):
 
         # Update state context panel
         self.update_context_pane(phase, frame)
-        state_widget = self.query_one("#state_context", Static)
+        state_widget = self.query_one("#state_context_content", Static)
         state_widget.refresh(layout=True)
 
         # Auto-scroll state context to track active step or bottom of container
+        scroll_container = self.query_one("#state_context", ScrollableContainer)
         if phase in ("tac", "optimizer") and frame and frame.detail:
             idx = frame.detail.get("index")
             if idx is not None:
-                viewport_height = state_widget.size.height or 15
+                viewport_height = scroll_container.size.height or 15
                 target_line = 3 + idx * 2
                 target_y = max(0, target_line - (viewport_height // 2))
-                self.call_after_refresh(state_widget.scroll_to, y=target_y, animate=False)
+                self.call_after_refresh(scroll_container.scroll_to, y=target_y, animate=False)
         else:
-            self.call_after_refresh(state_widget.scroll_end, animate=False)
+            self.call_after_refresh(scroll_container.scroll_end, animate=False)
 
     def update_context_pane(self, phase: str, frame: StepFrame | None) -> None:
         if not frame:
-            self.query_one("#state_context", Static).update("No active frame details.")
+            self.query_one("#state_context_content", Static).update("No active frame details.")
             return
 
         context = frame.context
         detail = frame.detail
 
         if phase == "lexer":
-            table = Table(title="Lexer Step Matches", show_header=True, header_style="bold green")
+            table = Table(
+                title="Lexer Step Matches",
+                show_header=True,
+                header_style="bold green",
+            )
             table.add_column("Property", style="dim")
             table.add_column("Value", style="bold white")
             table.add_row("Token Kind", str(detail.get("kind")))
@@ -237,7 +242,7 @@ class VisualizerApp(App):
             errors = context.get("errors", [])
             if errors:
                 err_text = "\n".join([f"• {e}" for e in errors])
-                self.query_one("#state_context", Static).update(
+                self.query_one("#state_context_content", Static).update(
                     Group(
                         table,
                         Text("\nLexical Errors:\n", style="bold red"),
@@ -245,7 +250,7 @@ class VisualizerApp(App):
                     )
                 )
             else:
-                self.query_one("#state_context", Static).update(table)
+                self.query_one("#state_context_content", Static).update(table)
 
         elif phase == "ll1_parser":
             stack = detail.get("stack", "[]")
@@ -264,7 +269,7 @@ class VisualizerApp(App):
                 f"[bold green]Lookahead:[/bold green] {lookahead}\n"
                 f"[bold green]Action:[/bold green] {action}{err_lbl}"
             )
-            self.query_one("#state_context", Static).update(
+            self.query_one("#state_context_content", Static).update(
                 Panel(
                     msg,
                     title="LL(1) Parser Context",
@@ -278,7 +283,7 @@ class VisualizerApp(App):
             ctrl_stack = context.get("control_stack", [])
             action = detail.get("action", "")
 
-            self.query_one("#state_context", Static).update(
+            self.query_one("#state_context_content", Static).update(
                 Panel(
                     f"[bold cyan]State Stack:[/bold cyan]\n  {stack}\n\n"
                     f"[bold cyan]Semantic Stack:[/bold cyan]\n  {sem_stack}\n\n"
@@ -311,7 +316,7 @@ class VisualizerApp(App):
 
             next_offset = context.get("next_offset", 0)
 
-            self.query_one("#state_context", Static).update(
+            self.query_one("#state_context_content", Static).update(
                 Group(
                     table,
                     Text(f"\nNext Offset Pointer: {next_offset} bytes", style="bold green"),
@@ -335,7 +340,7 @@ class VisualizerApp(App):
                 is_active = detail.get("index") == idx
                 style = "bold white on blue" if is_active else ""
                 table.add_row(str(idx), q[0], q[1], q[2], q[3], style=style)
-            self.query_one("#state_context", Static).update(table)
+            self.query_one("#state_context_content", Static).update(table)
 
         elif phase == "optimizer":
             quads = context.get("quads", [])
@@ -354,7 +359,7 @@ class VisualizerApp(App):
                 is_active = detail.get("index") == idx
                 style = "bold white on green" if is_active else ""
                 table.add_row(str(idx), q[0], q[1], q[2], q[3], style=style)
-            self.query_one("#state_context", Static).update(
+            self.query_one("#state_context_content", Static).update(
                 Group(
                     Text(f"Message: {detail.get('msg', '')}\n", style="bold green"),
                     table,
@@ -375,25 +380,31 @@ class VisualizerApp(App):
             for reg, var in sorted(registers.items()):
                 reg_table.add_row(reg, var)
 
-            instrs_text = "\n".join(instructions[-15:])
-
+            # Create a 2-column layout grid to display Details Panel and Register Table side-by-side
             layout_table = Table.grid(expand=True)
             layout_table.add_column(ratio=1)
             layout_table.add_column(ratio=1)
-            layout_table.add_row(
-                reg_table,
-                Panel(instrs_text, title="Emitted Code Stream (Recent)", border_style="dim"),
+
+            details_panel = Panel(
+                f"[bold green]Quad under translation:[/bold green] {detail.get('quad')}\n"
+                f"[bold green]Emitted Code for Quad:[/bold green]\n"
+                + "\n".join([f"  {i}" for i in detail.get("generated_instructions", [])]),
+                title="Code Generator Details",
+                border_style="yellow",
             )
 
-            self.query_one("#state_context", Static).update(
+            layout_table.add_row(details_panel, reg_table)
+
+            full_instrs_text = "\n".join(instructions) if instructions else ""
+
+            self.query_one("#state_context_content", Static).update(
                 Group(
-                    Panel(
-                        f"[bold green]Quad under translation:[/bold green] {detail.get('quad')}\n"
-                        f"[bold green]Emitted Code for Quad:[/bold green]\n"
-                        + "\n".join([f"  {i}" for i in detail.get("generated_instructions", [])]),
-                        title="Code Generator Details",
-                        border_style="yellow",
-                    ),
                     layout_table,
+                    Text("\n"),
+                    Panel(
+                        full_instrs_text,
+                        title="Emitted Target Assembly Code (Full Stream)",
+                        border_style="cyan",
+                    ),
                 )
             )
